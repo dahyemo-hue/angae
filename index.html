@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>월간 학습 레포트 시스템</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --ink:#1a1a2e; --ink-light:#2d2d4e; --paper:#f5f0e8; --paper-dark:#ede8d8;
+  --accent:#c84b31; --accent2:#2e86ab; --gold:#c9a84c; --green:#2d6a4f;
+  --red:#c84b31; --border:#c8bfa8; --text-muted:#7a7060; --sw:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:#ddd8cc;color:var(--ink);min-height:100vh;}
+.app-shell{display:flex;min-height:100vh;}
+.sidebar{width:var(--sw);min-height:100vh;background:var(--ink);color:#e8e0d0;padding:28px 20px;display:flex;flex-direction:column;gap:24px;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;}
+.main{margin-left:var(--sw);flex:1;padding:36px 40px;background:#ddd8cc;}
+.sidebar-logo{font-family:'Noto Serif KR',serif;font-size:16px;font-weight:700;color:var(--gold);border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:18px;}
+.sidebar-logo span{display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:.15em;margin-top:3px;}
+.nav-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:5px;}
+.nav-btn{background:none;border:none;color:rgba(255,255,255,.65);font-family:'Noto Sans KR',sans-serif;font-size:13px;padding:9px 10px;border-radius:5px;cursor:pointer;text-align:left;transition:all .2s;display:flex;align-items:center;gap:8px;width:100%;}
+.nav-btn:hover{background:rgba(255,255,255,.07);color:#fff;}
+.nav-btn.active{background:rgba(201,168,76,.18);color:var(--gold);}
+.sb-stats{font-size:11px;color:rgba(255,255,255,.4);line-height:2.2;}
+.sb-stats strong{color:rgba(255,255,255,.85);}
+.sb-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:3px;padding:7px 10px;font-size:11px;color:#e8e0d0;font-family:'Noto Sans KR',sans-serif;outline:none;width:100%;margin-bottom:6px;}
+.sb-input::placeholder{color:rgba(255,255,255,.3);}
+.page-title{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.page-sub{font-size:12px;color:var(--text-muted);margin-bottom:22px;}
+.card{background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:20px;margin-bottom:16px;}
+.ct{font-family:'Noto Serif KR',serif;font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:13px;color:var(--ink);display:flex;align-items:center;justify-content:space-between;}
+.ct-inner{display:flex;align-items:center;gap:7px;}
+.ct-inner::before{content:'';display:inline-block;width:3px;height:13px;background:var(--accent);border-radius:2px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px;}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:13px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--text-muted);text-transform:uppercase;}
+.fg input,.fg select{background:white;border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus{border-color:var(--accent2);}
+.btn{padding:8px 16px;border:none;border-radius:3px;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .18s;letter-spacing:.02em;}
+.bp{background:var(--ink);color:white;}.bp:hover{background:var(--ink-light);}
+.ba{background:var(--accent);color:white;}.ba:hover{opacity:.88;}
+.bg{background:var(--green);color:white;}.bg:hover{opacity:.88;}
+.bo{background:none;border:1.5px solid var(--border);color:var(--ink);}.bo:hover{border-color:var(--ink);}
+.bgold{background:var(--gold);color:white;}.bgold:hover{opacity:.88;}
+.bsm{padding:5px 11px;font-size:11px;}
+.bxs{padding:3px 8px;font-size:10px;}
+.qtable{width:100%;border-collapse:collapse;font-size:12px;}
+.qtable th{background:var(--ink);color:rgba(255,255,255,.75);padding:8px 10px;text-align:left;font-size:10px;letter-spacing:.1em;}
+.qtable td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.qtable tr:last-child td{border-bottom:none;}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:9px;margin-top:8px;}
+.scard{background:white;border:1.5px solid var(--border);border-radius:4px;padding:11px;cursor:pointer;transition:all .18s;}
+.scard:hover{border-color:var(--accent2);transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.07);}
+.sname{font-weight:700;font-size:13px;margin-bottom:2px;}
+.scls{font-size:10px;color:var(--text-muted);margin-bottom:7px;}
+.sscr{font-family:'IBM Plex Mono',monospace;font-size:18px;color:var(--accent);font-weight:600;}
+.sbar{width:100%;height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden;}
+.sbar-fill{height:100%;border-radius:2px;transition:width .5s;}
+.atable{width:100%;border-collapse:collapse;}
+.atable th{background:var(--paper-dark);padding:6px 9px;font-size:10px;letter-spacing:.1em;color:var(--text-muted);text-align:left;border-bottom:1px solid var(--border);}
+.atable td{padding:5px 9px;border-bottom:1px solid rgba(200,191,168,.3);vertical-align:middle;}
+.atog{display:flex;gap:3px;}
+.abtn{width:29px;height:25px;border:1.5px solid var(--border);border-radius:3px;background:white;font-family:'IBM Plex Mono',monospace;font-size:12px;cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;}
+.abtn.ok{background:var(--green);border-color:var(--green);color:white;}
+.abtn.ng{background:var(--red);border-color:var(--red);color:white;}
+/* Overview */
+.ovtable{width:100%;border-collapse:collapse;font-size:12px;}
+.ovtable th{background:var(--ink);color:rgba(255,255,255,.7);padding:8px 11px;font-size:10px;letter-spacing:.1em;text-align:left;}
+.ovtable td{padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.ovtable tr:hover td{background:rgba(0,0,0,.018);}
+.pp{height:5px;border-radius:3px;overflow:hidden;background:var(--border);width:100%;}
+.pp-fill{height:100%;border-radius:3px;}
+/* Report */
+.rwrap{background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:44px;max-width:900px;}
+.rlh{border-bottom:3px double var(--border);padding-bottom:20px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;}
+.rlh-left .rlab{font-family:'Noto Serif KR',serif;font-size:11px;color:var(--text-muted);letter-spacing:.08em;margin-bottom:5px;}
+.rlh-left .rtitle{font-family:'Noto Serif KR',serif;font-size:25px;font-weight:900;line-height:1.2;}
+.rmeta{text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);line-height:2;}
+.ssumm{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.sbox{background:white;border:1px solid var(--border);border-radius:4px;padding:13px;text-align:center;}
+.sbox .slabel{font-size:9px;letter-spacing:.16em;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;}
+.sbox .sval{font-family:'IBM Plex Mono',monospace;font-size:25px;font-weight:600;}
+.sbox .ssub{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.chrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.chcard{background:white;border:1px solid var(--border);border-radius:4px;padding:14px;}
+.chttl{font-size:10px;font-weight:700;letter-spacing:.07em;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;}
+.chwrap{position:relative;height:185px;}
+.trow{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(200,191,168,.35);font-size:12px;}
+.trow:last-child{border-bottom:none;}
+.ticon{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.tname{width:155px;font-weight:500;flex-shrink:0;}
+.badge{display:inline-block;padding:1px 6px;border-radius:2px;font-size:10px;font-weight:700;flex-shrink:0;width:32px;text-align:center;}
+.bweak{background:rgba(200,75,49,.1);color:var(--red);}
+.bmid{background:rgba(201,168,76,.14);color:#8a6f20;}
+.bstrong{background:rgba(45,106,79,.1);color:var(--green);}
+.tbarw{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.tbarf{height:100%;border-radius:3px;}
+.tpct{font-family:'IBM Plex Mono',monospace;font-size:11px;width:32px;text-align:right;flex-shrink:0;}
+.cbox{background:var(--paper-dark);border-left:3px solid var(--gold);border-radius:0 4px 4px 0;padding:18px 22px;font-size:13px;line-height:1.9;color:var(--ink);white-space:pre-wrap;}
+.witem{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid rgba(200,191,168,.3);font-size:12px;}
+.witem:last-child{border-bottom:none;}
+.wnum{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--red);width:68px;flex-shrink:0;}
+.aigen{display:flex;align-items:center;gap:9px;color:var(--text-muted);font-size:13px;padding:12px 0;}
+.dots span{display:inline-block;width:5px;height:5px;background:var(--text-muted);border-radius:50%;animation:dp 1.2s infinite;}
+.dots span:nth-child(2){animation-delay:.2s;}.dots span:nth-child(3){animation-delay:.4s;}
+@keyframes dp{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.tag{padding:2px 7px;border-radius:2px;font-size:10px;background:rgba(0,0,0,.06);color:var(--ink-light);}
+.rtoolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.hidden{display:none!important;}
+.mb14{margin-bottom:14px;}
+@media print{
+  @page{margin:13mm 15mm;}
+  .sidebar,.rtoolbar,.no-print{display:none!important;}
+  .main{margin-left:0!important;padding:0!important;background:white!important;}
+  body{background:white!important;}
+  #page-reports{display:block!important;}
+  .rwrap{border:none!important;padding:0!important;max-width:100%!important;}
+  .chrow{break-inside:avoid;}
+  .card{break-inside:avoid;border:1px solid #ccc!important;background:white!important;}
+  .sbox{border:1px solid #ccc!important;background:white!important;}
+  .cbox{background:#f8f5ee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .tbarf,.sbar-fill,.pp-fill{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+</style>
+</head>
+
+<body>
+<div class="app-shell">
+
+<aside class="sidebar">
+  <div class="sidebar-logo">월간 학습 레포트<span>ACADEMY REPORT SYSTEM</span></div>
+  <nav style="display:flex;flex-direction:column;gap:3px">
+    <div class="nav-label">메뉴</div>
+    <button class="nav-btn active" onclick="gp('exams')">📋 시험 관리</button>
+    <button class="nav-btn" onclick="gp('students')">👤 학생 관리</button>
+    <button class="nav-btn" onclick="gp('answers')">✏️ 정답 입력</button>
+    <button class="nav-btn" onclick="gp('overview')">📈 전체 현황</button>
+    <button class="nav-btn" onclick="gp('reports')">📄 레포트 발행</button>
+  </nav>
+  <div>
+    <div class="nav-label">현황</div>
+    <div class="sb-stats">시험 <strong id="stat-q">0</strong>개 &nbsp;·&nbsp; 학생 <strong id="stat-s">0</strong>명<br>입력 완료 <strong id="stat-a">0</strong>명</div>
+  </div>
+  <div>
+    <div class="nav-label" style="margin-bottom:8px">학원 정보</div>
+    <input class="sb-input" id="academy-name" placeholder="학원명" oninput="saveData()">
+  </div>
+  <div>
+    <div class="nav-label" style="margin-bottom:8px">데이터 관리</div>
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <button class="nav-btn" onclick="exportData()" style="font-size:11px">💾 JSON 내보내기</button>
+      <label class="nav-btn" style="font-size:11px;cursor:pointer">📂 JSON 불러오기<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
+      <button class="nav-btn" onclick="if(confirm('모든 데이터를 초기화할까요?'))resetData()" style="font-size:11px;color:rgba(200,75,49,.7)">🗑 전체 초기화</button>
+    </div>
+    <div id="save-status" style="font-size:10px;color:rgba(255,255,255,.3);margin-top:6px;font-family:'IBM Plex Mono',monospace;min-height:14px"></div>
+  </div>
+  <div style="margin-top:auto;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(255,255,255,.2);line-height:1.7">v6.0 · 시험별 문항 관리</div>
+</aside>
+
+<main class="main">
+
+<!-- ════════════════════════════════════════
+     시험 관리 (문항 관리 대체)
+     Exams: [{id, cls, name, month, questions:[{id,num,concept,type,cat}]}]
+════════════════════════════════════════ -->
+<div id="page-exams">
+  <div class="page-title">시험 관리</div>
+  <div class="page-sub">반별·월별로 시험을 등록하고 문항을 관리합니다. 3월 시험을 남겨두고 4월 시험을 따로 추가할 수 있습니다.</div>
+
+  <!-- 시험 목록 + 추가 -->
+  <div class="card">
+    <div class="ct"><span class="ct-inner">시험 추가</span></div>
+    <div class="form-row3">
+      <div class="fg"><label>반 이름</label>
+        <div style="display:flex;gap:5px">
+          <input id="ex-cls" placeholder="중3 심화반" style="flex:1">
+          <select id="ex-cls-sel" onchange="document.getElementById('ex-cls').value=this.value" style="flex:1;background:white;border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink);outline:none">
+            <option value="">-- 기존 반 --</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label>시험명</label><input id="ex-name" placeholder="3월 문법 시험"></div>
+      <div class="fg"><label>발행 월</label><input id="ex-month" placeholder="2025년 3월"></div>
+    </div>
+    <button class="btn bp" onclick="addExam()">+ 시험 추가</button>
+  </div>
+
+  <!-- 반 탭 -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="ct" style="margin-bottom:8px"><span class="ct-inner">반 선택</span></div>
+    <div id="ex-cls-tabs" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
+
+  <!-- 시험 목록 -->
+  <div id="ex-list"></div>
+
+  <!-- 문항 편집 영역 -->
+  <div id="ex-edit-area" style="display:none">
+    <div class="card">
+      <div class="ct">
+        <span class="ct-inner">문항 추가</span>
+        <span id="ex-edit-badge" style="font-size:11px;background:rgba(201,168,76,.15);color:var(--gold);padding:2px 10px;border-radius:3px;font-weight:700"></span>
+      </div>
+      <div class="form-row3">
+        <div class="fg"><label>문항 번호</label><input id="q-num" placeholder="01번, 주관식1 …"></div>
+        <div class="fg">
+          <label>유형</label>
+          <div style="display:flex;gap:5px">
+            <select id="q-type" style="flex:1;background:white;border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);outline:none"></select>
+            <button class="btn bo bsm" onclick="addCustomType()" style="padding:8px 10px;flex-shrink:0">＋</button>
+          </div>
+          <div id="q-type-tags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px"></div>
+        </div>
+        <div class="fg">
+          <label>카테고리</label>
+          <div style="display:flex;gap:5px">
+            <select id="q-cat" style="flex:1;background:white;border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);outline:none"></select>
+            <button class="btn bo bsm" onclick="addCustomCat()" style="padding:8px 10px;flex-shrink:0">＋</button>
+          </div>
+          <div id="q-cat-tags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px"></div>
+        </div>
+      </div>
+      <div class="fg mb14"><label>출제 개념</label><input id="q-concept" placeholder="예: 동명사 주어의 형태"></div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn bp" onclick="addQ()">+ 추가</button>
+        <button class="btn bo" onclick="showBulkQ()">📋 일괄 추가</button>
+        <button class="btn bo" onclick="loadSample()">📂 샘플 불러오기</button>
+        <button class="btn bo" style="color:var(--red);border-color:rgba(200,75,49,.4)" onclick="clearQ()">문항 전체 삭제</button>
+        <button class="btn bo" onclick="closeExamEdit()">← 목록으로</button>
+      </div>
+      <!-- 일괄 추가 패널 -->
+      <div id="bulk-q-panel" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.8">
+          한 줄에 문항 하나씩 입력하세요. 쉼표(,)로 구분합니다.<br>
+          <span style="font-family:'IBM Plex Mono',monospace;background:rgba(0,0,0,.05);padding:2px 6px;border-radius:2px">번호, 출제개념</span> — 유형·카테고리 생략 시 "객관식", "기타" 자동 적용<br>
+          <span style="font-family:'IBM Plex Mono',monospace;background:rgba(0,0,0,.05);padding:2px 6px;border-radius:2px">번호, 출제개념, 유형, 카테고리</span> — 전체 직접 지정
+        </div>
+        <textarea id="bulk-q-input" style="width:100%;height:160px;background:white;border:1px solid var(--border);border-radius:3px;padding:10px;font-size:12px;font-family:'IBM Plex Mono',monospace;line-height:1.8;resize:vertical;outline:none"
+          placeholder="01번, 동명사 주어의 형태&#10;02번, 동명사와 명사의 문장 내 역할 구분, 객관식, 동명사&#10;주관식1, 가주어 it - 진주어 to부정사 구문, 주관식, to부정사&#10;주관식2, 사역동사의 수동 목적격 보어, 주관식"></textarea>
+        <div style="display:flex;gap:7px;margin-top:8px;align-items:center">
+          <button class="btn bp" onclick="bulkAddQ()">일괄 등록</button>
+          <button class="btn bo" onclick="hideBulkQ()">취소</button>
+          <span id="bulk-q-status" style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace"></span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="ct-inner">등록 문항</span><span id="q-cnt" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted)">0개</span></div>
+      <table class="qtable"><thead><tr><th style="width:24px"></th><th style="width:78px">번호</th><th>출제 개념</th><th style="width:110px">카테고리</th><th style="width:62px">유형</th><th style="width:48px"></th></tr></thead><tbody id="q-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ 학생 관리 ════════════ -->
+<div id="page-students" class="hidden">
+  <div class="page-title">학생 관리</div>
+  <div class="page-sub">반을 선택해 학생을 등록·관리합니다.</div>
+  <div class="card">
+    <div class="ct"><span class="ct-inner">학생 추가</span></div>
+    <div class="form-row">
+      <div class="fg"><label>이름</label><input id="s-name" placeholder="홍길동" onkeydown="if(event.key==='Enter')addS()"></div>
+      <div class="fg"><label>반 / 학년</label>
+        <div style="display:flex;gap:5px">
+          <input id="s-class" placeholder="중3 심화반" onkeydown="if(event.key==='Enter')addS()" style="flex:1">
+          <select id="s-cls-sel" onchange="document.getElementById('s-class').value=this.value" style="flex:1;background:white;border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink);outline:none">
+            <option value="">-- 기존 반 --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn bp" onclick="addS()">+ 추가</button>
+      <button class="btn bo" onclick="addSampleS()">샘플 추가</button>
+      <button class="btn bo" onclick="showBulkAdd()">📋 일괄 추가</button>
+    </div>
+    <div id="bulk-panel" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+      <div class="nav-label" style="color:var(--text-muted);margin-bottom:6px">한 줄에 한 명씩 (이름, 반) — 반 생략 시 공통 반 적용</div>
+      <input style="width:100%;background:white;border:1px solid var(--border);border-radius:3px;padding:7px 10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;margin-bottom:6px" id="bulk-cls-default" placeholder="공통 반 이름 (예: 중3 심화반)">
+      <textarea id="bulk-input" style="width:100%;height:120px;background:white;border:1px solid var(--border);border-radius:3px;padding:10px;font-size:12px;font-family:'Noto Sans KR',sans-serif;resize:vertical;outline:none" placeholder="홍길동&#10;이서연, 중2 기초반&#10;박지호"></textarea>
+      <div style="display:flex;gap:7px;margin-top:8px">
+        <button class="btn bp" onclick="bulkAddS()">일괄 등록</button>
+        <button class="btn bo" onclick="hideBulkAdd()">취소</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct" style="margin-bottom:10px"><span class="ct-inner">반별 학생 목록</span><span id="s-cnt" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted)">0명</span></div>
+    <div id="s-cls-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+    <div id="s-cls-toolbar" style="display:none;margin-bottom:12px;align-items:center;gap:8px;flex-wrap:wrap">
+      <input id="s-search" style="background:white;border:1px solid var(--border);border-radius:3px;padding:5px 9px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;width:150px" placeholder="🔍 이름 검색" oninput="filterS(this.value)">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none">
+        <input type="checkbox" id="s-chk-all" onchange="toggleAllS(this.checked)" style="width:14px;height:14px;cursor:pointer"> 전체 선택
+      </label>
+      <button class="btn bo bsm" style="color:var(--red);border-color:rgba(200,75,49,.4)" onclick="delSelectedS()">✕ 선택 삭제</button>
+      <button class="btn bo bsm" style="color:var(--red);border-color:rgba(200,75,49,.4)" onclick="delClsS()">🗑 이 반 전체 삭제</button>
+    </div>
+    <div class="sgrid" id="s-grid"></div>
+  </div>
+</div>
+
+<!-- ════════════ 정답 입력 ════════════ -->
+<div id="page-answers" class="hidden">
+  <div class="page-title">정답 입력</div>
+  <div class="page-sub">반 → 시험 → 학생 순서로 선택해 정오를 입력합니다.</div>
+  <div class="card">
+    <div class="ct" style="margin-bottom:8px"><span class="ct-inner">① 반 선택</span></div>
+    <div id="ans-cls-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+    <div class="ct" style="margin-bottom:8px"><span class="ct-inner">② 시험 선택</span></div>
+    <div id="ans-exam-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+    <div class="ct" style="margin-bottom:8px">
+      <span class="ct-inner">③ 학생 선택</span>
+      <input id="ans-search" style="background:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:3px;padding:4px 9px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none;width:150px" placeholder="🔍 이름 검색" oninput="filterAnsS(this.value)">
+    </div>
+    <div id="ans-slist" style="display:flex;flex-wrap:wrap;gap:7px"></div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text-muted)" id="ans-progress"></div>
+  </div>
+  <div class="card hidden" id="ans-card">
+    <div class="ct"><span class="ct-inner" id="ans-sname">—</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn bo bsm" onclick="navAns(-1)">← 이전</button>
+        <button class="btn bo bsm" onclick="navAns(1)">다음 →</button>
+        <button class="btn bo bsm" onclick="fillAll()">전체 정답</button>
+        <button class="btn bgold bsm" onclick="saveAns()">✓ 저장</button>
+      </div>
+    </div>
+    <table class="atable"><thead><tr><th style="width:78px">번호</th><th>출제 개념</th><th style="width:58px">카테고리</th><th style="width:108px">정오</th></tr></thead><tbody id="ans-tbody"></tbody></table>
+  </div>
+</div>
+
+<!-- ════════════ 전체 현황 ════════════ -->
+<div id="page-overview" class="hidden">
+  <div class="page-title">전체 현황</div>
+  <div class="page-sub">반·시험을 선택하면 해당 기준으로 성적을 분석합니다.</div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="ct" style="margin-bottom:8px"><span class="ct-inner">반 · 시험 선택</span><span id="ov-label" style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace"></span></div>
+    <div id="ov-cls-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+    <div id="ov-exam-tabs" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
+  <div class="card">
+    <div class="ct"><span class="ct-inner">학생별 성적</span></div>
+    <div style="overflow-x:auto"><table class="ovtable"><thead><tr><th>순위</th><th>이름</th><th>반</th><th>정답</th><th>정답률</th><th style="width:140px">성취도</th><th>등급</th><th></th></tr></thead><tbody id="ov-tbody"></tbody></table></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card" style="margin:0"><div class="ct"><span class="ct-inner">카테고리별 평균</span></div><div style="height:190px;position:relative"><canvas id="cls-radar"></canvas></div></div>
+    <div class="card" style="margin:0"><div class="ct"><span class="ct-inner">점수 분포</span></div><div style="height:190px;position:relative"><canvas id="cls-dist"></canvas></div></div>
+  </div>
+</div>
+
+<!-- ════════════ 레포트 발행 ════════════ -->
+<div id="page-reports" class="hidden">
+  <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border)">
+    <button id="rpt-tab-new" class="btn bo" onclick="switchRptTab('new')" style="border:none;border-bottom:2px solid var(--accent);margin-bottom:-2px;border-radius:4px 4px 0 0;padding:9px 20px;font-size:13px;color:var(--accent);font-weight:700">📝 레포트 발행</button>
+    <button id="rpt-tab-saved" class="btn bo" onclick="switchRptTab('saved')" style="border:none;border-bottom:2px solid transparent;margin-bottom:-2px;border-radius:4px 4px 0 0;padding:9px 20px;font-size:13px;color:var(--text-muted)">📂 저장된 레포트</button>
+  </div>
+
+  <!-- 새 레포트 -->
+  <div id="rpt-panel-new">
+    <div id="rpt-sel">
+      <div class="page-title" style="margin-bottom:4px">레포트 발행</div>
+      <div class="page-sub">반 → 시험 → 학생 순서로 선택하세요.</div>
+      <div class="card">
+        <div class="ct" style="margin-bottom:8px"><span class="ct-inner">① 반 선택</span></div>
+        <div id="rpt-cls-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+        <div class="ct" style="margin-bottom:8px"><span class="ct-inner">② 시험 선택</span></div>
+        <div id="rpt-exam-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+        <div class="ct" style="margin-top:4px"><span class="ct-inner">③ 발행할 학생 선택</span><span id="rpt-label" style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace"></span></div>
+        <div class="sgrid" id="rpt-slist"></div>
+      </div>
+    </div>
+    <div id="rpt-area" style="display:none">
+      <div class="rtoolbar no-print">
+        <button class="btn bo" onclick="closeRpt()">← 목록</button>
+        <div style="display:flex;gap:7px">
+          <button class="btn bg" onclick="saveRptSnapshot(this)">💾 이 레포트 저장</button>
+          <button class="btn bo" onclick="window.print()">🖨 인쇄</button>
+          <button class="btn ba" onclick="window.print()">⬇ PDF 저장</button>
+        </div>
+      </div>
+      <div class="rwrap" id="rpt-content">
+        <div class="rlh">
+          <div class="rlh-left"><div class="rlab" id="r-acad"></div><div class="rtitle" id="r-title"></div></div>
+          <div class="rmeta" id="r-meta"></div>
+        </div>
+        <div class="ssumm" id="r-ssumm"></div>
+        <div class="chrow">
+          <div class="chcard"><div class="chttl">문항별 정오 현황</div><div class="chwrap"><canvas id="r-bar"></canvas></div></div>
+          <div class="chcard"><div class="chttl">카테고리별 성취도</div><div class="chwrap"><canvas id="r-radar"></canvas></div></div>
+        </div>
+        <div class="card" style="margin-bottom:14px"><div class="ct"><span class="ct-inner">단원별 상세 분석</span></div><div id="r-topics"></div></div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="ct">
+            <span class="ct-inner">✦ 학습 분석 코멘트</span>
+            <div class="no-print" style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+              <button class="btn bo bsm" id="r-ai-edit-btn" onclick="toggleAiEdit()" style="font-size:10px">✎ 수정</button>
+              <button class="btn bgold bsm" id="r-ai-save-btn" onclick="saveAiEdit()" style="display:none;font-size:10px">✓ 저장</button>
+              <button class="btn bo bsm" id="r-ai-cancel-btn" onclick="cancelAiEdit()" style="display:none;font-size:10px">취소</button>
+            </div>
+          </div>
+          <div id="r-comment"></div>
+          <div id="r-ai-editor" style="display:none;margin-top:10px">
+            <textarea id="r-ai-input" style="width:100%;min-height:200px;background:white;border:1.5px solid var(--accent2);border-radius:3px;padding:12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;line-height:1.9;color:var(--ink);resize:vertical;outline:none"></textarea>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="ct">
+            <span class="ct-inner">✦ 추가 코멘트</span>
+            <div class="no-print" style="display:flex;gap:5px;align-items:center">
+              <button class="btn bo bsm" id="r-mc-edit-btn" onclick="toggleMcEdit()" style="font-size:10px">✎ 입력</button>
+              <button class="btn bgold bsm" id="r-mc-save-btn" onclick="saveMc()" style="display:none;font-size:10px">✓ 저장</button>
+              <button class="btn bo bsm" id="r-mc-cancel-btn" onclick="cancelMcEdit()" style="display:none;font-size:10px">취소</button>
+              <button class="btn bo bsm" id="r-mc-del-btn" onclick="delMc()" style="display:none;font-size:10px;color:var(--red);border-color:rgba(200,75,49,.4)">🗑 삭제</button>
+            </div>
+          </div>
+          <div id="r-mc-empty" style="font-size:12px;color:var(--text-muted);padding:4px 0">수업 태도, 과제 이행 여부, 격려 메시지 등을 자유롭게 입력하세요.</div>
+          <div id="r-mc-text" class="cbox" style="display:none;border-left-color:var(--accent)"></div>
+          <div id="r-mc-editor" style="display:none;margin-top:10px">
+            <textarea id="r-mc-input" style="width:100%;min-height:120px;background:white;border:1.5px solid var(--accent2);border-radius:3px;padding:12px;font-size:13px;font-family:'Noto Sans KR',sans-serif;line-height:1.9;color:var(--ink);resize:vertical;outline:none" placeholder="추가 코멘트를 입력하세요."></textarea>
+          </div>
+        </div>
+        <div class="card" style="margin:0"><div class="ct"><span class="ct-inner">오답 문항 목록</span></div><div id="r-wrong"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 저장된 레포트 -->
+  <div id="rpt-panel-saved" style="display:none">
+    <div class="page-title" style="margin-bottom:4px">저장된 레포트</div>
+    <div class="page-sub">반·시험별로 저장된 레포트를 열람합니다.</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="ct" style="margin-bottom:8px"><span class="ct-inner">반 선택</span></div>
+      <div id="saved-cls-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+      <div id="saved-exam-tabs" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+    <!-- 선택 삭제 툴바 -->
+    <div id="saved-sel-toolbar" style="display:none;margin-bottom:12px;align-items:center;gap:8px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none">
+        <input type="checkbox" id="saved-chk-all" onchange="toggleAllSaved(this.checked)" style="width:14px;height:14px;cursor:pointer"> 전체 선택
+      </label>
+      <button class="btn bo bsm" style="color:var(--red);border-color:rgba(200,75,49,.4)" onclick="delSelectedSaved()">✕ 선택 삭제</button>
+      <span id="saved-sel-count" style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace"></span>
+    </div>
+    <div id="saved-rpt-list"></div>
+    <div id="saved-rpt-view" style="display:none">
+      <div class="rtoolbar no-print">
+        <button class="btn bo" onclick="closeSavedRpt()">← 목록</button>
+        <div style="display:flex;gap:7px">
+          <button class="btn bo bsm" style="color:var(--red);border-color:rgba(200,75,49,.4)" onclick="deleteSavedRpt()">🗑 삭제</button>
+          <button class="btn bo" onclick="window.print()">🖨 인쇄</button>
+          <button class="btn ba" onclick="window.print()">⬇ PDF 저장</button>
+        </div>
+      </div>
+      <div class="rwrap" id="saved-rpt-content"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// 데이터 구조
+// Exams: [{id, cls, name, month, questions:[{id,num,concept,type,cat}]}]
+// S:     [{id, name, cls}]
+// A:     { "sid::examId": { questionId: true/false } }  ← 시험별 정답
+// MC:    { "sid::examId": string }                      ← 시험별 추가 코멘트
+// savedReports: [{id, sid, examId, sname, cls, examName, month, acad,
+//                 savedAt, aiComment, manualComment,
+//                 ssummHtml, topicsHtml, wrongHtml, metaHtml, acadText, titleText}]
+// ══════════════════════════════════════════════════════════════
+let Exams=[], S=[], A={}, MC={}, savedReports=[];
+let customTypes=["객관식","주관식"];
+let customCats=["동명사","to부정사","분사/분사구문","가정법","수동태","문장형식(5형식)","완료시제","기타"];
+let bChart=null, rChart=null, cRadar=null, cDist=null;
+
+// 현재 선택 상태
+let currentExamId=null;  // 문항 편집 중인 시험 id
+let currentExCls=null;   // 시험 관리 탭
+let ansCls=null, ansExamId=null, ansFilter='';
+let ovCls=null, ovExamId=null;
+let rptCls=null, rptExamId=null;
+let savedCls=null, savedExamId=null;
+let currentRptSid=null, currentRptAiComment='', currentSavedRptId=null;
+let currentAnsIdx=0;
+
+// ── 헬퍼 ──
+const uid=()=>Date.now()+Math.random();
+const esc=s=>s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+function getExam(id){return Exams.find(e=>e.id===id)||null;}
+function getQ(examId){const e=getExam(examId);return e?e.questions:[];}
+function getAkey(sid,examId){return sid+'::'+examId;}
+function getA(sid,examId){return A[getAkey(sid,examId)]||{};}
+function getSc(sid,examId){
+  const q=getQ(examId); const a=getA(sid,examId);
+  if(!q.length||!Object.keys(a).length)return null;
+  const c=q.filter(x=>a[x.id]===true).length;
+  return{correct:c,total:q.length,pct:Math.round(c/q.length*100)};
+}
+function grade(pct){
+  if(pct>=90)return{l:'최우수',c:'var(--green)'};
+  if(pct>=80)return{l:'우수',c:'var(--accent2)'};
+  if(pct>=70)return{l:'양호',c:'var(--gold)'};
+  if(pct>=60)return{l:'보통',c:'#a07040'};
+  return{l:'보완필요',c:'var(--red)'};
+}
+function barC(pct){return pct>=80?'var(--green)':pct>=60?'var(--gold)':'var(--red)';}
+function allClasses(){return[...new Set([...Exams.map(e=>e.cls),...S.map(s=>s.cls)])].sort();}
+function examsForCls(cls){return Exams.filter(e=>e.cls===cls);}
+
+// ── STORAGE ──
+const SAVE_KEY='academy_report_v6';
+function saveData(){
+  const data={Exams,S,A,MC,savedReports,customTypes,customCats,
+    acad:document.getElementById('academy-name').value};
+  try{
+    localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+    const el=document.getElementById('save-status');
+    if(el)el.textContent='저장됨 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){}
+}
+function loadData(){
+  try{
+    let raw=localStorage.getItem(SAVE_KEY);
+    // v5 마이그레이션
+    if(!raw){
+      raw=localStorage.getItem('academy_report_v5');
+      if(raw){
+        const d=JSON.parse(raw);
+        // QbyClass → Exams 변환
+        if(d.QbyClass){
+          Object.entries(d.QbyClass).forEach(([cls,qs])=>{
+            Exams.push({id:uid(),cls,name:'기존 문항',month:'마이그레이션',questions:qs||[]});
+          });
+        }
+        S=d.S||[]; A={}; MC={}; savedReports=d.savedReports||[];
+        // 기존 정답 데이터 변환: A[sid] → A["sid::examId"]
+        // examId는 반에 해당하는 첫 번째 exam
+        if(d.A){
+          Object.entries(d.A).forEach(([sid,ans])=>{
+            const st=S.find(x=>String(x.id)===String(sid));
+            if(!st)return;
+            const exam=Exams.find(e=>e.cls===st.cls);
+            if(!exam)return;
+            A[getAkey(Number(sid),exam.id)]=ans;
+          });
+        }
+        if(d.acad)document.getElementById('academy-name').value=d.acad;
+        if(d.customTypes&&d.customTypes.length)customTypes=d.customTypes;
+        if(d.customCats&&d.customCats.length)customCats=d.customCats;
+        saveData(); renderTypeSelect(); renderCatSelect(); updStats(); updateClsSelects();
+        return;
+      }
+    }
+    if(!raw)return;
+    const d=JSON.parse(raw);
+    Exams=d.Exams||[]; S=d.S||[]; A=d.A||{}; MC=d.MC||{}; savedReports=d.savedReports||[];
+    if(d.customTypes&&d.customTypes.length)customTypes=d.customTypes;
+    if(d.customCats&&d.customCats.length)customCats=d.customCats;
+    if(d.acad)document.getElementById('academy-name').value=d.acad;
+    renderTypeSelect(); renderCatSelect(); updStats(); updateClsSelects();
+  }catch(e){console.error(e);}
+}
+function exportData(){
+  const data={Exams,S,A,MC,savedReports,customTypes,customCats,
+    acad:document.getElementById('academy-name').value,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=((data.acad||'academy')+'_v6_'+new Date().toISOString().slice(0,10)).replace(/\s/g,'_')+'.json';
+  a.click();
+}
+function importData(e){
+  const file=e.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      Exams=d.Exams||[]; S=d.S||[]; A=d.A||{}; MC=d.MC||{}; savedReports=d.savedReports||[];
+      if(d.customTypes&&d.customTypes.length)customTypes=d.customTypes;
+      if(d.customCats&&d.customCats.length)customCats=d.customCats;
+      if(d.acad)document.getElementById('academy-name').value=d.acad;
+      saveData(); renderTypeSelect(); renderCatSelect(); renderS(); updStats(); updateClsSelects();
+      alert('불러오기 완료! 학생 '+S.length+'명, 시험 '+Exams.length+'개');
+    }catch(err){alert('파일 형식이 맞지 않습니다.');}
+  };
+  r.readAsText(file); e.target.value='';
+}
+function resetData(){
+  Exams=[]; S=[]; A={}; MC={}; savedReports=[];
+  customTypes=["객관식","주관식"];
+  customCats=["동명사","to부정사","분사/분사구문","가정법","수동태","문장형식(5형식)","완료시제","기타"];
+  document.getElementById('academy-name').value='';
+  localStorage.removeItem(SAVE_KEY);
+  renderTypeSelect(); renderCatSelect(); renderExPage(); renderS(); updStats(); updateClsSelects();
+}
+
+// ── 반 선택 드롭다운 갱신 ──
+function updateClsSelects(){
+  const classes=allClasses();
+  const opts='<option value="">-- 기존 반 --</option>'+classes.map(c=>`<option value="${c}">${c}</option>`).join('');
+  ['ex-cls-sel','s-cls-sel'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+}
+
+function gp(p){
+  document.querySelectorAll('.main>div').forEach(d=>d.classList.add('hidden'));
+  document.getElementById('page-'+p).classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const map={exams:'시험',students:'학생',answers:'정답',overview:'전체',reports:'레포트'};
+  document.querySelectorAll('.nav-btn').forEach(b=>{if(b.textContent.includes(map[p]))b.classList.add('active');});
+  if(p==='exams')renderExPage();
+  if(p==='students'){renderS();updateClsSelects();}
+  if(p==='answers')renderAnsPage();
+  if(p==='overview')renderOv();
+  if(p==='reports')renderRptSel();
+  updStats();
+}
+function updStats(){
+  const totalQ=Exams.reduce((s,e)=>s+e.questions.length,0);
+  document.getElementById('stat-q').textContent=Exams.length+'('+totalQ+'문)';
+  document.getElementById('stat-s').textContent=S.length;
+  // 입력 완료 = (학생, 시험) 쌍 중 입력된 것
+  let done=0;
+  S.forEach(s=>{ Exams.filter(e=>e.cls===s.cls).forEach(e=>{ if(getSc(s.id,e.id))done++; }); });
+  document.getElementById('stat-a').textContent=done;
+}
+
+// ══════════════════════════════════════════
+// 유형/카테고리 관리
+// ══════════════════════════════════════════
+function renderTypeSelect(){
+  const sel=document.getElementById('q-type'); if(!sel)return;
+  const cur=sel.value||customTypes[0];
+  sel.innerHTML=customTypes.map(t=>`<option value="${t}">${t}</option>`).join('');
+  sel.value=customTypes.includes(cur)?cur:customTypes[0];
+  const tags=document.getElementById('q-type-tags');
+  if(tags)tags.innerHTML=customTypes.map((t,i)=>`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:2px;font-size:10px;background:rgba(0,0,0,.06);color:var(--ink-light)">${t}${i>=2?`<button onclick="delCustomType(${i})" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:10px;padding:0 0 0 2px">✕</button>`:''}</span>`).join('');
+}
+function renderCatSelect(){
+  const sel=document.getElementById('q-cat'); if(!sel)return;
+  const cur=sel.value||customCats[0];
+  sel.innerHTML=customCats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=customCats.includes(cur)?cur:customCats[0];
+  const tags=document.getElementById('q-cat-tags');
+  if(tags)tags.innerHTML=customCats.map((c,i)=>`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:2px;font-size:10px;background:rgba(0,0,0,.06);color:var(--ink-light)">${c}${i>=7?`<button onclick="delCustomCat(${i})" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:10px;padding:0 0 0 2px">✕</button>`:''}</span>`).join('');
+}
+function addCustomType(){const v=prompt('추가할 문제 유형');if(!v||!v.trim())return;const t=v.trim();if(customTypes.includes(t)){alert('이미 있습니다.');return;}customTypes.push(t);renderTypeSelect();document.getElementById('q-type').value=t;saveData();}
+function delCustomType(i){if(!confirm(`"${customTypes[i]}" 삭제?`))return;customTypes.splice(i,1);renderTypeSelect();saveData();}
+function addCustomCat(){const v=prompt('추가할 카테고리');if(!v||!v.trim())return;const t=v.trim();if(customCats.includes(t)){alert('이미 있습니다.');return;}customCats.push(t);renderCatSelect();document.getElementById('q-cat').value=t;saveData();}
+function delCustomCat(i){if(!confirm(`"${customCats[i]}" 삭제?`))return;customCats.splice(i,1);renderCatSelect();saveData();}
+
+// ══════════════════════════════════════════
+// 시험 관리
+// ══════════════════════════════════════════
+function addExam(){
+  const cls=document.getElementById('ex-cls').value.trim();
+  const name=document.getElementById('ex-name').value.trim();
+  const month=document.getElementById('ex-month').value.trim();
+  if(!cls||!name){alert('반 이름과 시험명을 입력하세요.');return;}
+  Exams.push({id:uid(),cls,name,month:month||name,questions:[]});
+  document.getElementById('ex-cls').value='';
+  document.getElementById('ex-name').value='';
+  document.getElementById('ex-month').value='';
+  saveData(); renderExPage(); updStats(); updateClsSelects();
+}
+function delExam(id){
+  const e=getExam(id); if(!e)return;
+  if(!confirm(`"${e.name}" 시험을 삭제할까요?\n(해당 시험의 정답 데이터도 삭제됩니다)`))return;
+  Exams=Exams.filter(x=>x.id!==id);
+  // 해당 시험 정답 삭제
+  Object.keys(A).filter(k=>k.endsWith('::'+id)).forEach(k=>delete A[k]);
+  Object.keys(MC).filter(k=>k.endsWith('::'+id)).forEach(k=>delete MC[k]);
+  saveData(); renderExPage(); updStats();
+}
+function openExamEdit(id){
+  currentExamId=id;
+  const e=getExam(id);
+  document.getElementById('ex-list').style.display='none';
+  document.getElementById('ex-edit-area').style.display='';
+  document.getElementById('ex-edit-badge').textContent=e.cls+' · '+e.name;
+  renderQ(); renderTypeSelect(); renderCatSelect();
+}
+function closeExamEdit(){
+  currentExamId=null;
+  document.getElementById('ex-edit-area').style.display='none';
+  document.getElementById('ex-list').style.display='';
+  renderExPage();
+}
+
+function renderExPage(){
+  // 반 탭
+  const classes=allClasses();
+  const tabsEl=document.getElementById('ex-cls-tabs');
+  if(!currentExCls||!classes.includes(currentExCls))currentExCls=classes[0]||null;
+  if(tabsEl)tabsEl.innerHTML=classes.map(c=>{
+    const cnt=examsForCls(c).length;
+    const e2=c.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return`<button class="btn ${c===currentExCls?'bgold':'bo'} bsm" onclick="currentExCls='${e2}';renderExPage()">${c} <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;opacity:.7">${cnt}개</span></button>`;
+  }).join('');
+
+  const listEl=document.getElementById('ex-list');
+  if(!currentExCls){listEl.innerHTML='<div style="color:var(--text-muted);font-size:13px">시험을 추가하거나 학생을 먼저 등록하세요.</div>';return;}
+  const exs=examsForCls(currentExCls);
+  if(!exs.length){listEl.innerHTML='<div style="color:var(--text-muted);font-size:13px">이 반에 등록된 시험이 없습니다.</div>';return;}
+  listEl.innerHTML=exs.map(e=>`
+    <div class="card" style="margin-bottom:10px">
+      <div class="ct">
+        <span class="ct-inner">${e.name} <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);font-weight:400">${e.month}</span></span>
+        <div style="display:flex;gap:7px;align-items:center">
+          <span style="font-size:11px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">${e.questions.length}문항</span>
+          <button class="btn bp bsm" onclick="openExamEdit(${e.id})">✎ 문항 편집</button>
+          <button class="btn bo bsm" onclick="copyExam(${e.id})">📋 복사</button>
+          <button class="btn bo bsm" style="color:var(--red);border-color:rgba(200,75,49,.4)" onclick="delExam(${e.id})">삭제</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function copyExam(id){
+  const e=getExam(id); if(!e)return;
+  const newName=prompt('복사할 시험 이름을 입력하세요',e.name+' (복사)');
+  if(!newName)return;
+  const newMonth=prompt('발행 월을 입력하세요',e.month);
+  Exams.push({id:uid(),cls:e.cls,name:newName,month:newMonth||newName,
+    questions:e.questions.map(q=>({...q,id:uid()}))});
+  saveData(); renderExPage(); updStats();
+}
+
+// 문항 CRUD
+function addQ(){
+  if(!currentExamId){alert('시험을 선택하세요');return;}
+  const n=document.getElementById('q-num').value.trim();
+  const c=document.getElementById('q-concept').value.trim();
+  if(!n||!c){alert('번호와 개념을 입력하세요');return;}
+  const e=getExam(currentExamId);
+  e.questions.push({id:uid(),num:n,concept:c,
+    type:document.getElementById('q-type').value,
+    cat:document.getElementById('q-cat').value});
+  document.getElementById('q-num').value='';
+  document.getElementById('q-concept').value='';
+  renderQ(); updStats(); saveData();
+}
+function delQ(qid){
+  const e=getExam(currentExamId); if(!e)return;
+  e.questions=e.questions.filter(q=>q.id!==qid);
+  renderQ(); updStats(); saveData();
+}
+function clearQ(){
+  if(!confirm('이 시험의 문항을 전체 삭제할까요?'))return;
+  getExam(currentExamId).questions=[];
+  renderQ(); updStats(); saveData();
+}
+function showBulkQ(){
+  document.getElementById('bulk-q-panel').style.display='';
+  document.getElementById('bulk-q-input').focus();
+  document.getElementById('bulk-q-status').textContent='';
+}
+function hideBulkQ(){
+  document.getElementById('bulk-q-panel').style.display='none';
+  document.getElementById('bulk-q-input').value='';
+  document.getElementById('bulk-q-status').textContent='';
+}
+function bulkAddQ(){
+  if(!currentExamId){alert('시험을 선택하세요');return;}
+  const lines=document.getElementById('bulk-q-input').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){alert('내용을 입력하세요');return;}
+  const exam=getExam(currentExamId);
+  let added=0, skipped=0;
+  lines.forEach(line=>{
+    const parts=line.split(',').map(p=>p.trim());
+    const num=parts[0]; const concept=parts[1];
+    if(!num||!concept){skipped++;return;}
+    const type=parts[2]&&customTypes.includes(parts[2])?parts[2]:customTypes[0];
+    const cat=parts[3]&&customCats.includes(parts[3])?parts[3]:
+              parts[2]&&customCats.includes(parts[2])?parts[2]: // 유형 생략하고 카테고리만 쓴 경우
+              customCats[customCats.length-1]; // 기타
+    exam.questions.push({id:uid(),num,concept,type,cat});
+    added++;
+  });
+  saveData(); renderQ(); updStats();
+  const status=document.getElementById('bulk-q-status');
+  if(skipped>0){
+    status.textContent=added+'개 등록, '+skipped+'개 건너뜀 (번호 또는 개념 없음)';
+    status.style.color='var(--gold)';
+  } else {
+    status.textContent=added+'개 등록 완료 ✓';
+    status.style.color='var(--green)';
+  }
+  document.getElementById('bulk-q-input').value='';
+  setTimeout(()=>{status.textContent='';},3000);
+}
+let editingQid=null;
+function renderQ(){
+  const q=getQ(currentExamId);
+  document.getElementById('q-cnt').textContent=q.length+'개';
+  document.getElementById('q-tbody').innerHTML=q.map(qi=>{
+    if(qi.id===editingQid) return renderQEditRow(qi);
+    return`<tr draggable="true" data-qid="${qi.id}" style="cursor:default"
+      ondragstart="onQDragStart(event,${qi.id})"
+      ondragover="onQDragOver(event)"
+      ondragenter="onQDragEnter(event)"
+      ondragleave="onQDragLeave(event)"
+      ondrop="onQDrop(event,${qi.id})"
+      ondragend="onQDragEnd(event)">
+      <td style="width:24px;text-align:center;cursor:grab;color:var(--text-muted);font-size:14px;user-select:none" title="드래그해서 순서 변경">⠿</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500">${qi.num}</td>
+      <td>${qi.concept}</td>
+      <td><span class="tag">${qi.cat}</span></td>
+      <td style="font-size:11px;color:var(--text-muted)">${qi.type}</td>
+      <td style="white-space:nowrap">
+        <button class="btn bxs bo" style="margin-right:3px" onclick="startEditQ(${qi.id})">수정</button>
+        <button class="btn bxs bo" style="color:var(--red);border-color:rgba(200,75,49,.3)" onclick="delQ(${qi.id})">삭제</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── 드래그 앤 드롭 ──
+let dragQid=null;
+function onQDragStart(e,qid){
+  dragQid=qid;
+  e.dataTransfer.effectAllowed='move';
+  e.currentTarget.style.opacity='0.4';
+}
+function onQDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';}
+function onQDragEnter(e){
+  const tr=e.currentTarget;
+  if(tr.dataset.qid!=dragQid) tr.style.borderTop='2px solid var(--accent2)';
+}
+function onQDragLeave(e){e.currentTarget.style.borderTop='';}
+function onQDrop(e,targetQid){
+  e.preventDefault();
+  e.currentTarget.style.borderTop='';
+  if(!dragQid||dragQid===targetQid)return;
+  const exam=getExam(currentExamId); if(!exam)return;
+  const q=exam.questions;
+  const fromIdx=q.findIndex(x=>x.id===dragQid);
+  const toIdx=q.findIndex(x=>x.id===targetQid);
+  if(fromIdx<0||toIdx<0)return;
+  const [moved]=q.splice(fromIdx,1);
+  q.splice(toIdx,0,moved);
+  saveData(); renderQ();
+}
+function onQDragEnd(e){
+  e.currentTarget.style.opacity='';
+  e.currentTarget.style.borderTop='';
+  dragQid=null;
+}
+function renderQEditRow(qi){
+  const typeOpts=customTypes.map(t=>`<option value="${t}" ${t===qi.type?'selected':''}>${t}</option>`).join('');
+  const catOpts=customCats.map(c=>`<option value="${c}" ${c===qi.cat?'selected':''}>${c}</option>`).join('');
+  return`<tr style="background:rgba(46,134,171,.05)">
+    <td style="width:24px;text-align:center;color:var(--border)">⠿</td>
+    <td><input id="eq-num" value="${qi.num.replace(/"/g,'&quot;')}" style="width:80px;padding:4px 6px;border:1.5px solid var(--accent2);border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:11px;outline:none"></td>
+    <td><input id="eq-concept" value="${qi.concept.replace(/"/g,'&quot;')}" style="width:100%;padding:4px 6px;border:1.5px solid var(--accent2);border-radius:3px;font-size:12px;font-family:'Noto Sans KR',sans-serif;outline:none"></td>
+    <td><select id="eq-cat" style="padding:4px 6px;border:1.5px solid var(--accent2);border-radius:3px;font-size:11px;outline:none">${catOpts}</select></td>
+    <td><select id="eq-type" style="padding:4px 6px;border:1.5px solid var(--accent2);border-radius:3px;font-size:11px;outline:none">${typeOpts}</select></td>
+    <td style="white-space:nowrap">
+      <button class="btn bxs bg" style="margin-right:3px" onclick="saveEditQ(${qi.id})">✓ 저장</button>
+      <button class="btn bxs bo" onclick="cancelEditQ()">취소</button>
+    </td>
+  </tr>`;
+}
+
+function startEditQ(qid){editingQid=qid;renderQ();const el=document.getElementById('eq-concept');if(el)el.focus();}
+function cancelEditQ(){editingQid=null;renderQ();}
+function saveEditQ(qid){
+  const e=getExam(currentExamId); if(!e)return;
+  const qi=e.questions.find(q=>q.id===qid); if(!qi)return;
+  const num=document.getElementById('eq-num').value.trim();
+  const concept=document.getElementById('eq-concept').value.trim();
+  if(!num||!concept){alert('번호와 개념을 입력하세요');return;}
+  qi.num=num; qi.concept=concept;
+  qi.cat=document.getElementById('eq-cat').value;
+  qi.type=document.getElementById('eq-type').value;
+  editingQid=null;
+  renderQ(); saveData();
+}
+function loadSample(){
+  if(!currentExamId){alert('시험을 선택하세요');return;}
+  const d=[
+    {num:'01번',concept:'동명사 주어의 형태',type:'객관식',cat:'동명사'},
+    {num:'02번',concept:'동명사와 명사의 문장 내 역할 구분',type:'객관식',cat:'동명사'},
+    {num:'03번',concept:'수동형 동명사(being p.p.)의 쓰임',type:'객관식',cat:'동명사'},
+    {num:'04~05번',concept:'가정법 과거 및 과거완료의 시제 일치',type:'객관식',cat:'가정법'},
+    {num:'06번',concept:'수동태의 형성 및 자동사의 수동태 불가 원리',type:'객관식',cat:'수동태'},
+    {num:'07~08번',concept:'to부정사의 용법 구분(부사적-원인 vs 형용사적)',type:'객관식',cat:'to부정사'},
+    {num:'09~10번',concept:'가정법 도치 및 If it were not for 대용어구',type:'객관식',cat:'가정법'},
+    {num:'11번',concept:'5형식/2형식 문장의 형용사 보어',type:'객관식',cat:'문장형식(5형식)'},
+    {num:'12번',concept:'문장의 본동사 찾기(준동사와의 구별)',type:'객관식',cat:'기타'},
+    {num:'13번',concept:'현재완료 수동태(have been p.p.)',type:'객관식',cat:'완료시제'},
+    {num:'14번',concept:'분사의 태 및 used to 관련 관용 표현',type:'객관식',cat:'분사/분사구문'},
+    {num:'15번',concept:'수동태 자동사 확인',type:'객관식',cat:'수동태'},
+    {num:'16번',concept:'혼합 가정법의 구조',type:'객관식',cat:'가정법'},
+    {num:'17~18번',concept:'가정법 과거완료 시제 일치',type:'객관식',cat:'가정법'},
+    {num:'19번',concept:'to부정사 형용사적 용법과 자동사 전치사',type:'객관식',cat:'to부정사'},
+    {num:'20번',concept:'5형식 사역/준사역동사의 목적격 보어',type:'객관식',cat:'문장형식(5형식)'},
+    {num:'21~22번',concept:'분사구문의 능동/수동 및 to부정사 부사적 용법',type:'객관식',cat:'분사/분사구문'},
+    {num:'23번',concept:'5형식 동사의 목적격 보어 및 완료 부정사',type:'객관식',cat:'문장형식(5형식)'},
+    {num:'24번',concept:'현재분사(수식)와 동명사(보어)의 구분',type:'객관식',cat:'동명사'},
+    {num:'25번',concept:'형용사 보어 추가 확인',type:'객관식',cat:'문장형식(5형식)'},
+    {num:'26번',concept:'forget + 동명사/부정사의 의미 차이',type:'객관식',cat:'동명사'},
+    {num:'27번',concept:'완료 분사구문(Having p.p.) 및 독립 분사구문',type:'객관식',cat:'분사/분사구문'},
+    {num:'28번',concept:'with + 목적어 + 분사(부대상황)',type:'객관식',cat:'분사/분사구문'},
+    {num:'주관식1',concept:'전치사가 필요 없는 완전타동사(approach)',type:'주관식',cat:'기타'},
+    {num:'주관식2',concept:'사역동사의 수동 목적격 보어(have + O + p.p.)',type:'주관식',cat:'문장형식(5형식)'},
+    {num:'주관식3',concept:'가주어 it - 진주어 to부정사 구문',type:'주관식',cat:'to부정사'},
+    {num:'주관식4',concept:'목적어 자리에 쓰인 동명사와 to부정사',type:'주관식',cat:'동명사'},
+    {num:'주관식5',concept:'동명사구 주어의 단수 취급(수 일치)',type:'주관식',cat:'동명사'},
+  ];
+  getExam(currentExamId).questions=d.map(x=>({id:uid(),...x}));
+  renderQ(); updStats(); saveData();
+}
+
+// ══════════════════════════════════════════
+// 학생 관리
+// ══════════════════════════════════════════
+let _sCls=null, _sFilter='';
+function filterS(v){_sFilter=v;renderS();}
+function selectSCls(cls){_sCls=cls;_sFilter='';const i=document.getElementById('s-search');if(i)i.value='';renderS();}
+function showBulkAdd(){document.getElementById('bulk-panel').style.display='';}
+function hideBulkAdd(){document.getElementById('bulk-panel').style.display='none';}
+function addS(){
+  const n=document.getElementById('s-name').value.trim(); if(!n){alert('이름을 입력하세요');return;}
+  const cls=document.getElementById('s-class').value.trim()||'미지정';
+  S.push({id:uid(),name:n,cls});
+  document.getElementById('s-name').value=''; document.getElementById('s-class').value='';
+  _sCls=cls; renderS(); updStats(); saveData(); updateClsSelects();
+}
+function addSampleS(){
+  ['김민준','이서연','박지호','최하은','정우진','강다은','윤민서'].forEach((n,i)=>S.push({id:uid(),name:n,cls:'중3 심화반'}));
+  ['장예준','임수아','한도윤','오지은','백준혁','신아름','류현우','나채원'].forEach((n,i)=>S.push({id:uid(),name:n,cls:'중2 기초반'}));
+  renderS(); updStats(); saveData(); updateClsSelects();
+}
+function bulkAddS(){
+  const defCls=document.getElementById('bulk-cls-default').value.trim()||'미지정';
+  const lines=document.getElementById('bulk-input').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  let added=0;
+  lines.forEach(line=>{
+    const parts=line.split(',').map(p=>p.trim());
+    const name=parts[0]; if(!name)return;
+    S.push({id:uid(),name,cls:parts[1]||defCls}); added++;
+  });
+  document.getElementById('bulk-input').value='';
+  hideBulkAdd(); renderS(); updStats(); saveData(); updateClsSelects();
+  alert(added+'명을 등록했습니다.');
+}
+function delS(id){if(!confirm('삭제?'))return;S=S.filter(s=>s.id!==id);renderS();updStats();saveData();}
+function delSelectedS(){
+  const ids=[...document.querySelectorAll('.s-chk:checked')].map(el=>Number(el.dataset.id));
+  if(!ids.length){alert('삭제할 학생을 선택하세요.');return;}
+  if(!confirm(ids.length+'명을 삭제할까요?'))return;
+  ids.forEach(id=>{S=S.filter(s=>s.id!==id);});
+  renderS(); updStats(); saveData();
+}
+function delClsS(){
+  if(!_sCls)return;
+  const cnt=S.filter(s=>s.cls===_sCls).length;
+  if(!cnt){alert('학생이 없습니다.');return;}
+  if(!confirm(`"${_sCls}" 반 학생 ${cnt}명을 전체 삭제할까요?`))return;
+  S=S.filter(s=>s.cls!==_sCls);
+  _sCls=null; renderS(); updStats(); saveData();
+}
+function toggleAllS(checked){document.querySelectorAll('.s-chk').forEach(el=>{el.checked=checked;el.closest('.scard').style.outline=checked?'2px solid var(--accent2)':''});}
+function renderS(){
+  const classes=[...new Set(S.map(s=>s.cls))].sort();
+  if(!_sCls||!classes.includes(_sCls))_sCls=classes[0]||null;
+  const tabsEl=document.getElementById('s-cls-tabs');
+  const toolbar=document.getElementById('s-cls-toolbar');
+  document.getElementById('s-cnt').textContent='전체 '+S.length+'명';
+  if(tabsEl)tabsEl.innerHTML=classes.map(c=>`<button class="btn ${c===_sCls?'bgold':'bo'} bsm" onclick="selectSCls('${esc(c)}')">${c} <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;opacity:.7">${S.filter(s=>s.cls===c).length}명</span></button>`).join('');
+  const grid=document.getElementById('s-grid');
+  if(!S.length){if(toolbar)toolbar.style.display='none';grid.innerHTML='<div style="font-size:13px;color:var(--text-muted)">등록된 학생이 없습니다.</div>';return;}
+  if(!_sCls){if(toolbar)toolbar.style.display='none';grid.innerHTML='';return;}
+  if(toolbar)toolbar.style.display='flex';
+  let list=S.filter(s=>s.cls===_sCls);
+  if(_sFilter)list=list.filter(s=>s.name.includes(_sFilter));
+  const chkAll=document.getElementById('s-chk-all');
+  if(chkAll)chkAll.checked=false;
+  grid.innerHTML=list.map(s=>{
+    // 이 학생의 시험별 최근 성적
+    const exs=examsForCls(s.cls);
+    const lastSc=exs.map(e=>getSc(s.id,e.id)).filter(Boolean).pop();
+    const gd=lastSc?grade(lastSc.pct):null;
+    return`<div class="scard" style="position:relative">
+      <label style="position:absolute;top:8px;right:8px;cursor:pointer" onclick="event.stopPropagation()">
+        <input type="checkbox" class="s-chk" data-id="${s.id}" style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent2)" onchange="this.closest('.scard').style.outline=this.checked?'2px solid var(--accent2):''">
+      </label>
+      <div class="sname" style="padding-right:22px">${s.name}</div><div class="scls">${s.cls}</div>
+      ${lastSc?`<div class="sscr">${lastSc.correct}<span style="font-size:12px;color:var(--text-muted)">/${lastSc.total}</span></div>
+      <div style="font-size:10px;color:${gd.c};font-weight:700;margin-top:2px">${gd.l} · ${lastSc.pct}%</div>
+      <div class="sbar"><div class="sbar-fill" style="width:${lastSc.pct}%;background:${barC(lastSc.pct)}"></div></div>`
+      :'<div style="font-size:11px;color:var(--text-muted);margin-top:4px">정답 미입력</div>'}
+      <button class="btn bxs bo" style="margin-top:8px;width:100%;color:var(--red);border-color:rgba(200,75,49,.3)" onclick="event.stopPropagation();delS(${s.id})">삭제</button>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// 정답 입력
+// ══════════════════════════════════════════
+function renderAnsPage(){
+  const classes=[...new Set(S.map(s=>s.cls))].sort();
+  if(!ansCls||!classes.includes(ansCls))ansCls=classes[0]||null;
+  const tabsEl=document.getElementById('ans-cls-tabs');
+  if(tabsEl)tabsEl.innerHTML=classes.map(c=>`<button class="btn ${c===ansCls?'bgold':'bo'} bsm" onclick="selectAnsCls('${esc(c)}')">${c}</button>`).join('');
+  renderAnsExamTabs();
+}
+function selectAnsCls(cls){ansCls=cls;ansExamId=null;ansFilter='';document.getElementById('ans-search').value='';renderAnsExamTabs();}
+function renderAnsExamTabs(){
+  const tabsEl=document.getElementById('ans-exam-tabs');
+  const exs=ansCls?examsForCls(ansCls):[];
+  if(!ansExamId||!exs.find(e=>e.id===ansExamId))ansExamId=exs[0]?.id||null;
+  if(tabsEl)tabsEl.innerHTML=exs.map(e=>{
+    const done=S.filter(s=>s.cls===ansCls&&getSc(s.id,e.id)).length;
+    const total=S.filter(s=>s.cls===ansCls).length;
+    return`<button class="btn ${e.id===ansExamId?'bgold':'bo'} bsm" onclick="selectAnsExam(${e.id})">${e.name} <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;opacity:.7">${done}/${total}</span></button>`;
+  }).join('');
+  renderAnsSlist();
+}
+function selectAnsExam(id){ansExamId=id;ansFilter='';document.getElementById('ans-search').value='';renderAnsSlist();}
+function filterAnsS(v){ansFilter=v;renderAnsSlist();}
+function renderAnsSlist(){
+  const el=document.getElementById('ans-slist');
+  const prog=document.getElementById('ans-progress');
+  if(!ansCls||!ansExamId){el.innerHTML='<div style="font-size:13px;color:var(--text-muted)">반과 시험을 선택하세요.</div>';return;}
+  const exam=getExam(ansExamId);
+  if(!exam||!exam.questions.length){el.innerHTML='<div style="font-size:13px;color:var(--text-muted);color:var(--red)">이 시험에 등록된 문항이 없습니다. 시험 관리에서 먼저 문항을 추가하세요.</div>';return;}
+  let list=S.filter(s=>s.cls===ansCls);
+  if(ansFilter)list=list.filter(s=>s.name.includes(ansFilter));
+  const done=S.filter(s=>s.cls===ansCls&&getSc(s.id,ansExamId)).length;
+  const total=S.filter(s=>s.cls===ansCls).length;
+  if(prog)prog.textContent=`${exam.name} 입력 완료: ${done}명 / ${total}명`;
+  el.innerHTML=list.map(s=>{
+    const sc=getSc(s.id,ansExamId);
+    return`<button class="btn ${sc?'bgold':'bo'} bsm" onclick="openAns(${s.id})">${s.name}${sc?' ✓':''}</button>`;
+  }).join('');
+}
+function openAns(sid){
+  if(!ansExamId){alert('시험을 선택하세요');return;}
+  const idx=S.findIndex(s=>s.cls===ansCls);
+  currentAnsIdx=S.findIndex(s=>s.id===sid);
+  _openAnsById(sid);
+}
+function _openAnsById(sid){
+  const s=S.find(x=>x.id===sid); if(!s)return;
+  const q=getQ(ansExamId);
+  const a=getA(sid,ansExamId);
+  const exam=getExam(ansExamId);
+  document.getElementById('ans-sname').textContent=s.name+' · '+s.cls+' · '+(exam?exam.name:'');
+  document.getElementById('ans-card').classList.remove('hidden');
+  document.getElementById('ans-card').dataset.sid=sid;
+  document.getElementById('ans-tbody').innerHTML=q.map(qi=>`<tr>
+    <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500">${qi.num}</td>
+    <td style="font-size:12px">${qi.concept}</td>
+    <td><span class="tag" style="font-size:9px">${qi.cat}</span></td>
+    <td><div class="atog">
+      <button class="abtn ${a[qi.id]===true?'ok':''}" onclick="togAns(${sid},${qi.id},true,this)">✓</button>
+      <button class="abtn ${a[qi.id]===false?'ng':''}" onclick="togAns(${sid},${qi.id},false,this)">✗</button>
+    </div></td>
+  </tr>`).join('');
+  document.getElementById('ans-card').scrollIntoView({behavior:'smooth'});
+}
+function navAns(dir){
+  saveAns(true);
+  const sInCls=S.filter(s=>s.cls===ansCls);
+  const cur=sInCls.findIndex(s=>s.id===Number(document.getElementById('ans-card').dataset.sid));
+  const next=cur+dir;
+  if(next<0){alert('첫 번째 학생입니다.');return;}
+  if(next>=sInCls.length){alert('마지막 학생입니다.');return;}
+  _openAnsById(sInCls[next].id);
+}
+function togAns(sid,qid,ok,btn){
+  const key=getAkey(sid,ansExamId);
+  if(!A[key])A[key]={};
+  const bs=btn.closest('tr').querySelectorAll('.abtn');
+  bs[0].classList.remove('ok'); bs[1].classList.remove('ng');
+  if(ok)bs[0].classList.add('ok'); else bs[1].classList.add('ng');
+  A[key][qid]=ok;
+}
+function fillAll(){
+  const sid=Number(document.getElementById('ans-card').dataset.sid);
+  const key=getAkey(sid,ansExamId);
+  if(!A[key])A[key]={};
+  const q=getQ(ansExamId);
+  document.querySelectorAll('#ans-tbody .abtn:first-child').forEach(b=>{b.classList.add('ok');b.nextElementSibling.classList.remove('ng');});
+  q.forEach(qi=>{A[key][qi.id]=true;});
+}
+function saveAns(silent=false){
+  saveData(); renderAnsSlist(); updStats();
+  if(!silent){
+    const b=document.querySelector('#ans-card .bgold');
+    if(!b)return;
+    const t=b.textContent; b.textContent='저장됨 ✓'; b.style.background='var(--green)';
+    setTimeout(()=>{b.textContent=t;b.style.background='';},1500);
+  }
+}
+
+// ══════════════════════════════════════════
+// 전체 현황
+// ══════════════════════════════════════════
+function renderOv(){
+  const classes=[...new Set(S.map(s=>s.cls))].sort();
+  if(!ovCls||!classes.includes(ovCls))ovCls=classes[0]||null;
+  const tabsEl=document.getElementById('ov-cls-tabs');
+  if(tabsEl)tabsEl.innerHTML=classes.map(c=>`<button class="btn ${c===ovCls?'bgold':'bo'} bsm" onclick="ovCls='${esc(c)}';ovExamId=null;renderOv()">${c}</button>`).join('');
+  const exs=ovCls?examsForCls(ovCls):[];
+  if(!ovExamId||!exs.find(e=>e.id===ovExamId))ovExamId=exs[0]?.id||null;
+  const examTabsEl=document.getElementById('ov-exam-tabs');
+  if(examTabsEl)examTabsEl.innerHTML=exs.map(e=>`<button class="btn ${e.id===ovExamId?'bgold':'bo'} bsm" onclick="ovExamId=${e.id};renderOv()">${e.name} <span style="font-size:10px;opacity:.6">${e.month}</span></button>`).join('');
+
+  const labelEl=document.getElementById('ov-label');
+  const exam=getExam(ovExamId);
+  if(labelEl)labelEl.textContent=ovCls&&exam?ovCls+' · '+exam.name:'';
+
+  const tbody=document.getElementById('ov-tbody');
+  if(!ovCls||!ovExamId){tbody.innerHTML='<tr><td colspan="8" style="padding:20px;color:var(--text-muted);text-align:center">반과 시험을 선택하세요.</td></tr>';return;}
+
+  const students=S.filter(s=>s.cls===ovCls);
+  const scList=students.map(s=>({s,sc:getSc(s.id,ovExamId)})).filter(x=>x.sc);
+  scList.sort((a,b)=>b.sc.pct-a.sc.pct);
+
+  if(!scList.length){
+    tbody.innerHTML='<tr><td colspan="8" style="padding:20px;color:var(--text-muted);text-align:center">성적 데이터가 없습니다.</td></tr>';
+    if(cRadar){cRadar.destroy();cRadar=null;} if(cDist){cDist.destroy();cDist=null;}
+    return;
+  }
+  tbody.innerHTML=scList.map(({s,sc:x},i)=>{
+    const g=grade(x.pct);
+    return`<tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:${i<3?'var(--gold)':'var(--text-muted)'}">${i+1}</td>
+      <td style="font-weight:700">${s.name}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${s.cls}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-weight:600">${x.correct}/${x.total}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:${g.c}">${x.pct}%</td>
+      <td><div class="pp"><div class="pp-fill" style="width:${x.pct}%;background:${barC(x.pct)}"></div></div></td>
+      <td><span style="font-size:11px;font-weight:700;color:${g.c}">${g.l}</span></td>
+      <td><button class="btn bxs ba" onclick="gp('reports');setTimeout(()=>{rptCls='${esc(ovCls)}';rptExamId=${ovExamId};renderRptSel();setTimeout(()=>genRpt(${s.id}),80);},120)">레포트</button></td>
+    </tr>`;
+  }).join('');
+
+  const q=getQ(ovExamId);
+  const cats=[...new Set(q.map(qi=>qi.cat))];
+  const avg=cats.map(cat=>{
+    const cq=q.filter(qi=>qi.cat===cat);
+    if(!scList.length)return 0;
+    const tot=scList.reduce((sum,{s:st})=>{
+      const a=getA(st.id,ovExamId);
+      return sum+cq.filter(qi=>a[qi.id]===true).length;
+    },0);
+    return Math.round(tot/(cq.length*scList.length)*100);
+  });
+  if(cRadar)cRadar.destroy();
+  cRadar=new Chart(document.getElementById('cls-radar').getContext('2d'),{
+    type:'radar',data:{labels:cats,datasets:[{data:avg,backgroundColor:'rgba(46,134,171,.12)',borderColor:'rgba(46,134,171,.8)',borderWidth:2,pointBackgroundColor:'#2e86ab',pointRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{size:9}},pointLabels:{font:{size:10}},grid:{color:'rgba(0,0,0,.07)'}}}}
+  });
+  const bins=[0,0,0,0,0];
+  scList.forEach(({sc:x})=>{if(x.pct>=90)bins[4]++;else if(x.pct>=80)bins[3]++;else if(x.pct>=70)bins[2]++;else if(x.pct>=60)bins[1]++;else bins[0]++;});
+  if(cDist)cDist.destroy();
+  cDist=new Chart(document.getElementById('cls-dist').getContext('2d'),{
+    type:'bar',data:{labels:['~59','60–69','70–79','80–89','90~'],datasets:[{data:bins,backgroundColor:['rgba(200,75,49,.7)','rgba(201,168,76,.7)','rgba(160,168,76,.7)','rgba(46,134,171,.7)','rgba(45,106,79,.7)'],borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.05)'}}}}
+  });
+}
+
+// ══════════════════════════════════════════
+// 레포트 발행
+// ══════════════════════════════════════════
+function switchRptTab(tab){
+  const isNew=tab==='new';
+  document.getElementById('rpt-panel-new').style.display=isNew?'':'none';
+  document.getElementById('rpt-panel-saved').style.display=isNew?'none':'';
+  const tn=document.getElementById('rpt-tab-new'), ts=document.getElementById('rpt-tab-saved');
+  tn.style.borderBottomColor=isNew?'var(--accent)':'transparent';
+  tn.style.color=isNew?'var(--accent)':'var(--text-muted)'; tn.style.fontWeight=isNew?'700':'400';
+  ts.style.borderBottomColor=isNew?'transparent':'var(--accent)';
+  ts.style.color=isNew?'var(--text-muted)':'var(--accent)'; ts.style.fontWeight=isNew?'400':'700';
+  if(!isNew)renderSavedList();
+}
+function renderRptSel(){
+  const classes=[...new Set(S.map(s=>s.cls))].sort();
+  if(!rptCls||!classes.includes(rptCls))rptCls=classes[0]||null;
+  const tabsEl=document.getElementById('rpt-cls-tabs');
+  if(tabsEl)tabsEl.innerHTML=classes.map(c=>`<button class="btn ${c===rptCls?'bgold':'bo'} bsm" onclick="rptCls='${esc(c)}';rptExamId=null;renderRptSel()">${c}</button>`).join('');
+  const exs=rptCls?examsForCls(rptCls):[];
+  if(!rptExamId||!exs.find(e=>e.id===rptExamId))rptExamId=exs[0]?.id||null;
+  const examTabsEl=document.getElementById('rpt-exam-tabs');
+  if(examTabsEl)examTabsEl.innerHTML=exs.map(e=>`<button class="btn ${e.id===rptExamId?'bgold':'bo'} bsm" onclick="rptExamId=${e.id};renderRptSel()">${e.name} <span style="font-size:10px;opacity:.6">${e.month}</span></button>`).join('');
+
+  const exam=getExam(rptExamId);
+  const labelEl=document.getElementById('rpt-label');
+  if(labelEl)labelEl.textContent=rptCls&&exam?rptCls+' · '+exam.name:'';
+
+  const el=document.getElementById('rpt-slist');
+  if(!rptCls||!rptExamId){el.innerHTML='<div style="font-size:13px;color:var(--text-muted)">반과 시험을 선택하세요.</div>';return;}
+  const students=S.filter(s=>s.cls===rptCls);
+  el.innerHTML=students.map(s=>{
+    const sc=getSc(s.id,rptExamId); const g=sc?grade(sc.pct):null;
+    const hasQ=exam&&exam.questions.length>0;
+    return`<div class="scard" onclick="${sc?'genRpt('+s.id+')':hasQ?'alert(\'정답을 먼저 입력하세요\')':'alert(\'이 시험에 문항이 없습니다\')'}">
+      <div class="sname">${s.name}</div><div class="scls">${s.cls}</div>
+      ${sc?`<div class="sscr">${sc.pct}<span style="font-size:12px;color:var(--text-muted)">%</span></div>
+      <div style="font-size:10px;color:${g.c};font-weight:700;margin-top:2px">${g.l}</div>
+      <div class="sbar"><div class="sbar-fill" style="width:${sc.pct}%;background:${barC(sc.pct)}"></div></div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:6px">클릭 → 레포트 생성</div>`
+      :`<div style="font-size:11px;color:var(--red);margin-top:4px">${hasQ?'정답 미입력':'문항 없음'}</div>`}
+    </div>`;
+  }).join('');
+}
+function closeRpt(){
+  document.getElementById('rpt-area').style.display='none';
+  document.getElementById('rpt-sel').style.display='';
+  if(bChart){bChart.destroy();bChart=null;}
+  if(rChart){rChart.destroy();rChart=null;}
+  currentRptSid=null; currentRptAiComment='';
+}
+
+async function genRpt(sid){
+  currentRptSid=sid;
+  const s=S.find(x=>x.id===sid);
+  const exam=getExam(rptExamId);
+  const q=exam?exam.questions:[];
+  if(!q.length){alert('이 시험에 문항이 없습니다.');return;}
+  const sc=getSc(sid,rptExamId);
+  if(!sc){alert('정답이 입력되지 않았습니다.');return;}
+  const a=getA(sid,rptExamId);
+
+  document.getElementById('rpt-sel').style.display='none';
+  document.getElementById('rpt-area').style.display='';
+
+  // UI 초기화
+  ['r-ai-editor','r-mc-editor'].forEach(id=>document.getElementById(id).style.display='none');
+  ['r-ai-save-btn','r-ai-cancel-btn','r-mc-save-btn','r-mc-cancel-btn','r-mc-del-btn'].forEach(id=>document.getElementById(id).style.display='none');
+  ['r-ai-edit-btn','r-mc-edit-btn'].forEach(id=>document.getElementById(id).style.display='');
+
+  const acad=document.getElementById('academy-name').value||'학원';
+  const g=grade(sc.pct);
+  document.getElementById('r-acad').textContent=acad+' · '+exam.name;
+  document.getElementById('r-title').textContent=s.name+' 학생 월간 학습 레포트';
+  document.getElementById('r-meta').innerHTML=exam.month+'<br>'+s.cls+'<br>발행: '+new Date().toLocaleDateString('ko-KR');
+
+  const wrong=q.filter(qi=>a[qi.id]===false);
+
+  // 교육부 9등급
+  const clsMates=S.filter(x=>x.cls===s.cls);
+  const clsScores=clsMates.map(x=>getSc(x.id,rptExamId)).filter(Boolean).map(x=>x.pct).sort((a,b)=>b-a);
+  function calcNaesin(myPct,scores){
+    if(scores.length<2)return null;
+    const above=scores.filter(p=>p>myPct).length;
+    const topPct=(above+1)/scores.length*100;
+    const cuts=[4,11,23,40,60,77,89,96,100];
+    const colors=['var(--green)','var(--green)','var(--accent2)','var(--accent2)','var(--gold)','#a07040','var(--red)','var(--red)','var(--red)'];
+    const gi=cuts.findIndex(c=>topPct<=c);
+    const gradeNum=gi===-1?9:gi+1;
+    return{grade:gradeNum+'등급',color:colors[gradeNum-1],topPct:Math.round(topPct*10)/10};
+  }
+  const naesin=calcNaesin(sc.pct,clsScores);
+  const naesinLabel=naesin?naesin.grade:'—';
+  const naesinColor=naesin?naesin.color:'var(--text-muted)';
+  const naesinSub=naesin?'상위 '+naesin.topPct+'%':'학생 수 부족';
+
+  document.getElementById('r-ssumm').innerHTML=`
+    <div class="sbox"><div class="slabel">총점</div><div class="sval">${sc.correct}<span style="font-size:13px;color:var(--text-muted)">/${sc.total}</span></div><div class="ssub">정답 수</div></div>
+    <div class="sbox"><div class="slabel">정답률</div><div class="sval" style="color:${g.c}">${sc.pct}%</div><div class="ssub">${g.l}</div></div>
+    <div class="sbox"><div class="slabel">오답 수</div><div class="sval" style="color:var(--red)">${wrong.length}</div><div class="ssub">문항</div></div>
+    <div class="sbox"><div class="slabel">등급</div><div class="sval" style="color:${naesinColor};font-size:20px">${naesinLabel}</div><div class="ssub">${naesinSub}</div></div>`;
+
+  const cats=[...new Set(q.map(qi=>qi.cat))];
+  const catD=cats.map(cat=>{
+    const cq=q.filter(qi=>qi.cat===cat);
+    const c=cq.filter(qi=>a[qi.id]===true).length;
+    return{cat,total:cq.length,correct:c,pct:Math.round(c/cq.length*100)};
+  });
+
+  document.getElementById('r-topics').innerHTML=[...catD].sort((a,b)=>a.pct-b.pct).map(d=>{
+    const cl=d.pct>=80?'var(--green)':d.pct>=50?'var(--gold)':'var(--red)';
+    const bc=d.pct>=80?'bstrong':d.pct>=50?'bmid':'bweak';
+    return`<div class="trow">
+      <div class="ticon" style="background:${cl}18;color:${cl}">${d.pct>=80?'✓':'!'}</div>
+      <div class="tname">${d.cat}</div>
+      <span class="badge ${bc}">${d.pct>=80?'강점':d.pct>=50?'보통':'취약'}</span>
+      <div class="tbarw"><div class="tbarf" style="width:${d.pct}%;background:${cl}"></div></div>
+      <div class="tpct" style="color:${cl}">${d.pct}%</div>
+      <div style="font-size:10px;color:var(--text-muted);width:40px;text-align:right">${d.correct}/${d.total}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('r-wrong').innerHTML=wrong.length===0
+    ?'<div style="color:var(--green);font-size:13px;padding:8px 0">🎉 오답 없음 — 전 문항 정답!</div>'
+    :wrong.map(qi=>`<div class="witem"><span class="wnum">${qi.num}</span><span style="flex:1">${qi.concept}</span><span class="badge bweak" style="font-size:9px;width:auto">${qi.cat}</span></div>`).join('');
+
+  setTimeout(()=>{drawBar(a,q);drawRadar(cats,catD);},80);
+  renderMcState(sid,rptExamId);
+  await genComment(s,sc,catD,wrong,exam.month,exam.name,acad,naesin);
+}
+
+function drawBar(a,q){
+  if(bChart)bChart.destroy();
+  bChart=new Chart(document.getElementById('r-bar').getContext('2d'),{
+    type:'bar',
+    data:{labels:q.map(qi=>qi.num),datasets:[{data:q.map(qi=>a[qi.id]===true?1:0),backgroundColor:q.map(qi=>a[qi.id]===true?'rgba(45,106,79,.7)':'rgba(200,75,49,.65)'),borderRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:1,ticks:{display:false}},x:{ticks:{font:{size:8},maxRotation:45}}}}
+  });
+}
+function drawRadar(cats,catD){
+  if(rChart)rChart.destroy();
+  rChart=new Chart(document.getElementById('r-radar').getContext('2d'),{
+    type:'radar',
+    data:{labels:cats,datasets:[{data:catD.map(d=>d.pct),backgroundColor:'rgba(46,134,171,.12)',borderColor:'rgba(46,134,171,.8)',borderWidth:2,pointBackgroundColor:'#2e86ab',pointRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{size:9}},pointLabels:{font:{size:10}},grid:{color:'rgba(0,0,0,.07)'}}}}
+  });
+}
+
+// AI 코멘트 수정
+function toggleAiEdit(){
+  document.getElementById('r-ai-input').value=currentRptAiComment;
+  document.getElementById('r-ai-editor').style.display='';
+  document.getElementById('r-ai-edit-btn').style.display='none';
+  document.getElementById('r-ai-save-btn').style.display='';
+  document.getElementById('r-ai-cancel-btn').style.display='';
+  document.getElementById('r-ai-input').focus();
+}
+function cancelAiEdit(){
+  document.getElementById('r-ai-editor').style.display='none';
+  document.getElementById('r-ai-edit-btn').style.display='';
+  document.getElementById('r-ai-save-btn').style.display='none';
+  document.getElementById('r-ai-cancel-btn').style.display='none';
+}
+function saveAiEdit(){
+  currentRptAiComment=document.getElementById('r-ai-input').value.trim();
+  document.getElementById('r-comment').innerHTML=`<div class="cbox">${currentRptAiComment}</div>`;
+  cancelAiEdit();
+}
+
+// 추가 코멘트
+function renderMcState(sid,examId){
+  const key=getAkey(sid,examId);
+  const text=MC[key];
+  document.getElementById('r-mc-text').textContent=text||'';
+  document.getElementById('r-mc-text').style.display=text?'':'none';
+  document.getElementById('r-mc-empty').style.display=text?'none':'';
+  document.getElementById('r-mc-edit-btn').textContent=text?'✎ 수정':'✎ 입력';
+  document.getElementById('r-mc-del-btn').style.display=text?'':'none';
+}
+function toggleMcEdit(){
+  const key=getAkey(currentRptSid,rptExamId);
+  document.getElementById('r-mc-input').value=MC[key]||'';
+  document.getElementById('r-mc-editor').style.display='';
+  document.getElementById('r-mc-edit-btn').style.display='none';
+  document.getElementById('r-mc-save-btn').style.display='';
+  document.getElementById('r-mc-cancel-btn').style.display='';
+  document.getElementById('r-mc-del-btn').style.display='none';
+  document.getElementById('r-mc-input').focus();
+}
+function cancelMcEdit(){
+  document.getElementById('r-mc-editor').style.display='none';
+  document.getElementById('r-mc-edit-btn').style.display='';
+  document.getElementById('r-mc-save-btn').style.display='none';
+  document.getElementById('r-mc-cancel-btn').style.display='none';
+  renderMcState(currentRptSid,rptExamId);
+}
+function saveMc(){
+  const key=getAkey(currentRptSid,rptExamId);
+  const text=document.getElementById('r-mc-input').value.trim();
+  if(text)MC[key]=text; else delete MC[key];
+  saveData(); cancelMcEdit();
+}
+function delMc(){
+  if(!confirm('추가 코멘트를 삭제할까요?'))return;
+  delete MC[getAkey(currentRptSid,rptExamId)];
+  saveData(); renderMcState(currentRptSid,rptExamId);
+}
+
+// 스냅샷 저장
+function saveRptSnapshot(btn){
+  if(!currentRptSid||!rptExamId)return;
+  const s=S.find(x=>x.id===currentRptSid);
+  const exam=getExam(rptExamId); if(!s||!exam)return;
+  const key=getAkey(currentRptSid,rptExamId);
+  savedReports.push({
+    id:uid(), sid:currentRptSid, examId:rptExamId,
+    sname:s.name, cls:s.cls, examName:exam.name, month:exam.month,
+    acad:document.getElementById('academy-name').value||'학원',
+    savedAt:new Date().toISOString(),
+    aiComment:currentRptAiComment, manualComment:MC[key]||'',
+    ssummHtml:document.getElementById('r-ssumm').innerHTML,
+    topicsHtml:document.getElementById('r-topics').innerHTML,
+    wrongHtml:document.getElementById('r-wrong').innerHTML,
+    metaHtml:document.getElementById('r-meta').innerHTML,
+    acadText:document.getElementById('r-acad').textContent,
+    titleText:document.getElementById('r-title').textContent,
+  });
+  saveData();
+  const orig=btn.textContent; btn.textContent='✓ 저장됨'; btn.style.background='var(--green)';
+  setTimeout(()=>{btn.textContent=orig;btn.style.background='';},2000);
+}
+
+// 저장된 레포트 목록
+function renderSavedList(){
+  const tabsEl=document.getElementById('saved-cls-tabs');
+  const listEl=document.getElementById('saved-rpt-list');
+  document.getElementById('saved-rpt-view').style.display='none';
+  listEl.style.display='';
+
+  if(!savedReports.length){
+    if(tabsEl)tabsEl.innerHTML='';
+    document.getElementById('saved-exam-tabs').innerHTML='';
+    listEl.innerHTML='<div class="card" style="text-align:center;color:var(--text-muted);font-size:13px;padding:30px">저장된 레포트가 없습니다.<br><span style="font-size:11px;margin-top:6px;display:block">레포트 발행 후 "💾 이 레포트 저장" 버튼을 누르세요.</span></div>';
+    return;
+  }
+  const classes=[...new Set(savedReports.map(r=>r.cls))].sort();
+  if(!savedCls||!classes.includes(savedCls))savedCls=classes[0];
+  if(tabsEl)tabsEl.innerHTML=classes.map(c=>`<button class="btn ${c===savedCls?'bgold':'bo'} bsm" onclick="savedCls='${esc(c)}';savedExamId=null;renderSavedList()">${c}</button>`).join('');
+
+  const clsRpts=savedReports.filter(r=>r.cls===savedCls);
+  const examNames=[...new Set(clsRpts.map(r=>r.examName))];
+  const firstExamName=examNames[0]||null;
+  if(!savedExamId){
+    const firstRpt=clsRpts[0];
+    savedExamId=firstRpt?firstRpt.examId:null;
+  }
+  const examTabsEl=document.getElementById('saved-exam-tabs');
+  if(examTabsEl)examTabsEl.innerHTML=examNames.map(name=>{
+    const id=clsRpts.find(r=>r.examName===name)?.examId;
+    return`<button class="btn ${id===savedExamId?'bgold':'bo'} bsm" onclick="savedExamId=${id};renderSavedList()">${name}</button>`;
+  }).join('');
+
+  const filtered=clsRpts.filter(r=>r.examId===savedExamId);
+  const toolbar=document.getElementById('saved-sel-toolbar');
+  const chkAll=document.getElementById('saved-chk-all');
+  if(!filtered.length){
+    if(toolbar)toolbar.style.display='none';
+    listEl.innerHTML='<div style="color:var(--text-muted);font-size:13px;padding:16px">이 시험의 저장된 레포트가 없습니다.</div>';
+    return;
+  }
+  if(toolbar)toolbar.style.display='flex';
+  if(chkAll)chkAll.checked=false;
+  updateSavedSelCount();
+
+  const byStudent={};
+  filtered.forEach(r=>{if(!byStudent[r.sid])byStudent[r.sid]=[];byStudent[r.sid].push(r);});
+  listEl.innerHTML=Object.entries(byStudent).map(([sid,rpts])=>{
+    const sorted=[...rpts].sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
+    return`<div class="card" style="margin-bottom:10px">
+      <div class="ct"><span class="ct-inner">${sorted[0].sname}</span><span style="font-size:11px;color:var(--text-muted)">${sorted[0].cls}</span></div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        ${sorted.map(r=>`<label style="display:flex;flex-direction:column;gap:4px;padding:8px 12px;background:white;border:1.5px solid var(--border);border-radius:3px;cursor:pointer;transition:all .15s;min-width:90px"
+          onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="if(!this.querySelector('input').checked)this.style.borderColor='var(--border)'">
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="checkbox" class="saved-chk" data-id="${r.id}"
+              style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent2)"
+              onchange="this.closest('label').style.borderColor=this.checked?'var(--accent2)':'var(--border)';updateSavedSelCount()">
+            <span style="font-weight:700;font-size:12px">${r.month}</span>
+          </div>
+          <span style="font-size:10px;color:var(--text-muted)">${new Date(r.savedAt).toLocaleDateString('ko-KR')}</span>
+          <button class="btn bo bxs" onclick="event.preventDefault();event.stopPropagation();openSavedRpt(${r.id})" style="margin-top:2px;font-size:10px">열기</button>
+        </label>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function updateSavedSelCount(){
+  const checked=document.querySelectorAll('.saved-chk:checked').length;
+  const el=document.getElementById('saved-sel-count');
+  if(el)el.textContent=checked?checked+'개 선택됨':'';
+}
+function toggleAllSaved(checked){
+  document.querySelectorAll('.saved-chk').forEach(el=>{
+    el.checked=checked;
+    el.closest('label').style.borderColor=checked?'var(--accent2)':'var(--border)';
+  });
+  updateSavedSelCount();
+}
+function delSelectedSaved(){
+  const ids=[...document.querySelectorAll('.saved-chk:checked')].map(el=>Number(el.dataset.id));
+  if(!ids.length){alert('삭제할 레포트를 선택하세요.');return;}
+  if(!confirm(ids.length+'개의 레포트를 삭제할까요?'))return;
+  savedReports=savedReports.filter(r=>!ids.includes(r.id));
+  saveData(); renderSavedList();
+}
+function openSavedRpt(id){
+  const r=savedReports.find(x=>x.id===id); if(!r)return;
+  currentSavedRptId=id;
+  document.getElementById('saved-rpt-list').style.display='none';
+  document.getElementById('saved-cls-tabs').style.display='none';
+  document.getElementById('saved-exam-tabs').style.display='none';
+  document.getElementById('saved-rpt-view').style.display='';
+  const mc=r.manualComment?`<div class="card" style="margin-bottom:14px"><div class="ct"><span class="ct-inner">✦ 추가 코멘트</span></div><div class="cbox" style="border-left-color:var(--accent)">${r.manualComment}</div></div>`:'';
+  document.getElementById('saved-rpt-content').innerHTML=`
+    <div class="rlh">
+      <div class="rlh-left"><div class="rlab">${r.acadText}</div><div class="rtitle">${r.titleText}</div></div>
+      <div class="rmeta" style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);line-height:2">${r.metaHtml}</div>
+    </div>
+    <div class="ssumm">${r.ssummHtml}</div>
+    <div class="card" style="margin-bottom:14px"><div class="ct"><span class="ct-inner">단원별 상세 분석</span></div>${r.topicsHtml}</div>
+    <div class="card" style="margin-bottom:14px"><div class="ct"><span class="ct-inner">✦ 학습 분석 코멘트</span></div><div class="cbox">${r.aiComment}</div></div>
+    ${mc}
+    <div class="card" style="margin:0"><div class="ct"><span class="ct-inner">오답 문항 목록</span></div>${r.wrongHtml}</div>`;
+}
+function closeSavedRpt(){
+  currentSavedRptId=null;
+  document.getElementById('saved-rpt-view').style.display='none';
+  ['saved-rpt-list','saved-cls-tabs','saved-exam-tabs'].forEach(id=>document.getElementById(id).style.display='');
+  const tb=document.getElementById('saved-sel-toolbar');if(tb)tb.style.display='flex';
+}
+function deleteSavedRpt(){
+  const r=savedReports.find(x=>x.id===currentSavedRptId);
+  if(!confirm(`${r?.sname} (${r?.month}) 레포트를 삭제할까요?`))return;
+  savedReports=savedReports.filter(x=>x.id!==currentSavedRptId);
+  saveData(); closeSavedRpt(); renderSavedList();
+}
+
+// ══════════════════════════════════════════
+// AI 코멘트 생성
+// ══════════════════════════════════════════
+async function genComment(s,sc,catD,wrong,month,examName,acad,naesin){
+  const el=document.getElementById('r-comment');
+  el.innerHTML=`<div class="aigen"><div class="dots"><span></span><span></span><span></span></div>학습 분석 코멘트 생성 중…</div>`;
+  const weak=catD.filter(d=>d.pct<60).map(d=>d.cat);
+  const strong=catD.filter(d=>d.pct>=80).map(d=>d.cat);
+  const mid=catD.filter(d=>d.pct>=60&&d.pct<80).map(d=>d.cat);
+  const g=grade(sc.pct);
+  const catDetail=catD.map(d=>`${d.cat}: ${d.correct}/${d.total}문항 (${d.pct}%)`).join(', ');
+  const wrongDetail=wrong.map(q=>`${q.num}(${q.cat}: ${q.concept})`).join(', ');
+  const prompt=`당신은 10년 이상 경력의 영어 문법 전문 학원 강사입니다. 아래 성적 데이터를 바탕으로, 이 학생의 학부모님께 전달할 월간 학습 종합 분석 보고서를 작성해 주세요. 학부모님이 자녀의 현재 상태를 정확히 이해하고 가정에서 실질적으로 도움을 드릴 수 있도록, 전문 용어는 쉽게 풀어 쓰고 구체적이고 따뜻하게 서술해 주세요.
+
+[시험 정보] 학원: ${acad} / 시험명: ${examName} / 발행월: ${month}
+[학생 정보] 이름: ${s.name} / 반: ${s.cls} / 등급: ${naesin ? naesin.grade+" (상위 "+naesin.topPct+"%)" : g.l}
+[성적] 정답률: ${sc.pct}% (${sc.correct}/${sc.total}문항)
+[카테고리별 상세] ${catDetail}
+[강점 영역 80%↑] ${strong.length?strong.join(', '):'없음'}
+[보통 영역 60~79%] ${mid.length?mid.join(', '):'없음'}
+[취약 영역 60%↓] ${weak.length?weak.join(', '):'없음'}
+[오답 문항 상세] ${wrong.length?wrongDetail:'없음 (전 문항 정답)'}
+
+아래 5가지 항목으로 구성된 보고서를 작성하세요. 특히 3번과 4번 항목을 가장 충분히 서술해 주세요. 학부모님이 읽는 글이므로 따뜻하고 신뢰감 있는 어조를 유지하세요.
+
+1. 이번 달 종합 총평 (5~6문장)
+   - 이번 시험 결과와 등급, 정답률을 자연스럽게 언급하며 학생의 현재 수준을 전체적으로 평가하세요.
+   - 학부모님이 "우리 아이가 지금 어느 위치에 있구나"를 직관적으로 느낄 수 있도록 서술하세요.
+   - 긍정적인 면을 먼저 언급하고, 보완이 필요한 부분은 부드럽게 전달하세요.
+
+2. 강점 영역 분석 (4~5문장)
+   - 잘한 카테고리와 정확도를 구체적으로 언급하며 학생을 칭찬하세요.
+   - 이 강점이 앞으로의 학습에 어떤 도움이 되는지 설명하고, 심화 방향을 제시하세요.
+
+3. 취약 영역 심층 분석 및 맞춤 처방 (이 항목이 가장 중요합니다 — 8~10문장 이상)
+   - 오답이 집중된 카테고리를 구체적으로 언급하고, 학부모님이 이해할 수 있는 언어로 왜 어려운지 설명하세요.
+   - 각 취약 개념마다 어떤 부분에서 혼동이 생기는지, 어떤 방식으로 접근해야 극복할 수 있는지 상세히 서술하세요.
+   - 단순 암기가 아닌 이해 중심의 학습법을 구체적으로 안내하고, 학생이 실제로 실천할 수 있는 방법을 제시하세요.
+   - 취약 개념을 방치했을 때 어떤 문제가 생기는지도 간략히 언급하여 학부모님이 중요성을 인식할 수 있도록 하세요.
+
+4. 가정에서의 학습 지원 방법 (6~8문장)
+   - 학부모님이 집에서 자녀의 학습을 도울 수 있는 현실적이고 구체적인 방법을 안내하세요.
+   - 오답 노트 활용법, 복습 루틴(1일·3일·1주 반복 등), 권장 학습 시간, 자녀와 함께할 수 있는 학습 방법을 포함하세요.
+   - 학부모님이 직접 개입하지 않아도 자녀 스스로 실천할 수 있는 습관 형성 방법도 알려주세요.
+   - 학습 환경 조성, 동기 부여 방법 등 정서적 지원 방법도 한두 문장 포함하세요.
+
+5. 다음 달 목표 및 응원 메시지 (4~5문장)
+   - 구체적인 목표 정답률 또는 등급을 제시하고, 달성을 위해 집중할 핵심 과제를 안내하세요.
+   - 학생의 가능성을 믿는 진심 어린 응원과, 학부모님께 대한 감사와 신뢰의 메시지로 따뜻하게 마무리하세요.
+
+전체 분량은 1300~1700자 내외로 충분히 작성하세요. 마크다운 없이 일반 텍스트로만, 항목 제목은 "1. 이번 달 종합 총평" 형식으로 달아주세요.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'';
+    if(text){currentRptAiComment=text;el.innerHTML=`<div class="cbox">${text}</div>`;return;}
+  }catch(e){}
+  currentRptAiComment=fallback(s,sc,catD,weak,strong,month,g,naesin);
+  el.innerHTML=`<div class="cbox">${currentRptAiComment}</div>`;
+}
+function fallback(s,sc,catD,weak,strong,month,g,naesin){
+  const ng=naesin?naesin.grade+' (상위 '+naesin.topPct+'%)':g.l;
+  const midCats=catD.filter(d=>d.pct>=60&&d.pct<80).map(d=>d.cat);
+  let t='1. 이번 달 종합 총평\n';
+  t+=s.name+' 학생은 '+month+' 시험에서 정답률 '+sc.pct+'%('+sc.correct+'/'+sc.total+'문항)을 기록하여 '+ng+' 수준의 성취를 보였습니다. ';
+  t+=sc.pct>=80?'전반적으로 매우 안정적인 실력을 발휘하였으며, 영어 문법 전 영역에 걸쳐 탄탄한 이해를 갖추고 있음을 확인할 수 있었습니다. 꾸준한 노력이 결실을 맺고 있으며, 이 기세를 유지한다면 상위 등급 진입도 충분히 가능합니다.':sc.pct>=60?'기본적인 문법 개념의 이해는 갖추어져 있으나, 개념을 실제 문장에 적용하는 과정에서 일부 오류가 발생하였습니다. 취약 영역을 집중적으로 보완하고 반복 연습을 병행한다면 다음 시험에서 한 단계 높은 결과를 기대할 수 있습니다.':'핵심 문법 개념에 대한 이해를 기초부터 재정비할 필요가 있는 단계입니다. 기본 규칙을 하나씩 확실히 익혀나가면 반드시 실력이 향상되며, 지금이 가장 중요한 전환점이 될 수 있습니다.';
+  t+='\n\n2. 강점 영역 심층 분석\n';
+  if(strong.length){
+    t+=strong.join(', ')+' 영역에서 80% 이상의 높은 정확도를 기록하며 뛰어난 이해도를 보였습니다. 해당 영역의 핵심 규칙과 예외 사항까지 정확히 파악하고 있으며, 실제 문항 적용 능력도 탁월합니다. 이 강점을 바탕으로 독해 지문 속 해당 문법 구조를 분석하거나 서술형 문항에 직접 활용하는 심화 연습으로 확장해 나가면 더욱 높은 수준의 실력을 갖출 수 있습니다. 강점 영역을 유지하면서 보통 수준인 '+(midCats.length?midCats.join(', '):'다른 영역들')+' 영역도 강점 수준으로 끌어올리는 것이 다음 목표입니다.';
+  }else{
+    t+='이번 시험에서 두드러진 강점 영역이 형성되지는 않았으나, 전 영역에 고르게 도전한 자세는 높이 평가할 수 있습니다. 각 영역의 핵심 규칙을 정확히 정리하는 작업과 집중적인 반복 학습을 통해 한두 영역에서 확실한 강점을 만들어가는 것이 현재 가장 중요한 과제입니다.';
+  }
+  t+='\n\n3. 취약 영역 원인 분석 및 맞춤 처방\n';
+  if(weak.length){
+    t+=weak.join(', ')+' 영역에서 오답이 집중되어 집중적인 보완이 필요합니다. 이 영역의 오류는 주로 유사한 형태의 개념을 혼동하거나 문장 문맥 속에서 규칙을 적용하는 과정에서 발생하는 경우가 많습니다. 각 개념의 핵심 규칙을 한 문장으로 정리하고 대표 예문 3~5개와 함께 암기한 뒤, 직접 예문을 만들어보는 연습을 병행하면 효과적입니다. 오답 문항의 선택지를 분석하여 왜 틀렸는지 스스로 설명할 수 있을 때까지 반복 복습하는 것을 강력히 권장합니다. 수업 시간에 해당 개념을 재확인하고 유사 유형의 추가 문제를 통해 완전한 이해를 다져나가겠습니다.';
+  }else{
+    t+='이번 시험에서는 60% 미만의 취약 영역이 발견되지 않아 전 영역을 고르게 소화한 결과가 나타났습니다. 다만 60~80% 구간에 머물러 있는 영역들은 아직 완성도를 높일 여지가 있으므로, 심화 문제 풀이와 응용 연습을 통해 80% 이상의 강점 수준으로 끌어올리는 것을 목표로 합시다.';
+  }
+  t+='\n\n4. 가정 학습 권장 사항\n오답 문항은 반드시 오답 노트에 문항 번호·틀린 이유·정답 근거를 함께 기록하는 습관을 들이세요. 복습 주기는 오답 정리 후 1일·3일·1주일 간격으로 반복하는 방식이 가장 효과적입니다. 하루 20~30분씩 주 3~4회 취약 개념 위주의 집중 복습 루틴을 만드는 것을 권장합니다. 단순히 문제를 푸는 것에 그치지 않고 각 문법 규칙을 소리 내어 설명해보거나 직접 예문을 써보는 적극적인 학습 방법을 실천해 주세요.';
+  const nextTarget=Math.min(100,sc.pct>=80?sc.pct+5:sc.pct+10);
+  t+='\n\n5. 다음 달 목표 설정 및 응원\n다음 달 시험에서는 정답률 '+nextTarget+'% 이상을 구체적인 목표로 설정하고, 특히 이번에 취약했던 영역에서 눈에 띄는 향상을 이루어냈으면 합니다. 이번 결과를 발판 삼아 오답 노트 정리와 반복 학습 루틴을 꾸준히 실천한다면 다음 달에는 한 단계 높은 성취를 충분히 기대할 수 있습니다. '+s.name+' 학생이 가진 잠재력과 성장 가능성을 강사로서 분명히 느끼고 있습니다. 포기하지 않고 꾸준히 나아가는 자세가 가장 큰 무기입니다. 앞으로도 함께 성장해 나가겠습니다.';
+  return t;
+}
+
+loadData();
+updStats();
+renderTypeSelect();
+renderCatSelect();
+</script>
+
+</body>
+</html>
